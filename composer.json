@@ -1,7 +1,7 @@
 {
-    "name": "run_as_root/ext-magento2-run_as_root-feed",
+    "name": "run_as_root/ext-magento2-google-shopping-feed",
     "version": "1.0.0",
-    "description": "This module provides a scheduled product feed csv export.",
+    "description": "This module provides a google shopping product feed csv export.",
     "type": "magento2-module",
     "require": {
         "magento/framework": "*",
@@ -27,7 +27,7 @@
             "registration.php"
         ],
         "psr-4": {
-            "RunAsRoot\\Feed\\": ""
+            "RunAsRoot\\GoogleShoppingFeed\\": ""
         }
     }
 }
