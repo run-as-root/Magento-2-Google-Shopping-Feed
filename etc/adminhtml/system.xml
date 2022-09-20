@@ -29,7 +29,7 @@
                        showInWebsite="1"
                        canRestore="1">
                     <label>Cron Schedule</label>
-                    <comment>By default cron will run every 15 minutes.</comment>
+                    <comment>By default cron will run every 2 hours.</comment>
                     <source_model>RunAsRoot\GoogleShoppingFeed\SourceModel\FrequencySourceModel</source_model>
                     <depends>
                         <field id="run_as_root_product_feed/general/enabled">1</field>

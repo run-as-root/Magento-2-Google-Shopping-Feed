@@ -16,6 +16,7 @@ use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\IsInStockProvide
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ItemGroupIdProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ManufacturerProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\MaterialProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SizeProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\NameProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\PatternProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\PriceProvider;
@@ -71,6 +72,10 @@ interface AttributesToImportEnumInterface
         'material' => [
             AttributeConfigData::FIELD_NAME => 'material',
             AttributeConfigData::ATTRIBUTE_HANDLER => MaterialProvider::class,
+        ],
+        'size' => [
+            AttributeConfigData::FIELD_NAME => 'size',
+            AttributeConfigData::ATTRIBUTE_HANDLER => SizeProvider::class,
         ],
         'material_cloth' => [
             AttributeConfigData::FIELD_NAME => 'material_cloth',

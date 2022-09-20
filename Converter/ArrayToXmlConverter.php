@@ -21,7 +21,8 @@ class ArrayToXmlConverter
         $xml .= $this->getCreationTimeTag() . PHP_EOL;
 
         foreach ($rows as $row) {
-            $xml .= $this->getItem($row) . PHP_EOL;
+            $pattern = "/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/";
+            $xml .= preg_replace($pattern, "\n", $this->getItem($row)) . PHP_EOL;
         }
 
         $xml .= $this->getCloseRootTag();
@@ -56,19 +57,38 @@ XML;
 			<g:availability><![CDATA[{$row['is_in_stock']}]]></g:availability>
             <g:product_type><![CDATA[{$row['product_type']}]]></g:product_type>
 			<g:price><![CDATA[{$row['price']}]]></g:price>
-			<g:brand><![CDATA[{$row['manufacturer']}]]></g:brand>
-			<g:gtin><![CDATA[{$row['ean']}]]></g:gtin>
             <g:mpn><![CDATA[{$row['sku']}]]></g:mpn>
-            <g:color><![CDATA[{$row['color']}]]></g:color>
-            <g:gender><![CDATA[{$row['gender']}]]></g:gender>
-            <g:material><![CDATA[{$row['material']}]]></g:material>
-            <g:pattern><![CDATA[{$row['pattern']}]]></g:pattern>
+            {$this->getOptionalProductAttr($row, 'manufacturer', 'brand')}
             <g:item_group_id><![CDATA[{$row['item_group_id']}]]></g:item_group_id>
+            {$this->getOptionalProductAttr($row, 'ean', 'gtin')}
+            {$this->getOptionalProductAttr($row, 'color')}
+            {$this->getOptionalProductAttr($row, 'gender')}
+            {$this->getOptionalProductAttr($row, 'material')}
+            {$this->getOptionalProductAttr($row, 'size')}
+            {$this->getOptionalProductAttr($row, 'pattern')}
             {$this->getProductDetail($row['product_detail'])}
 			{$this->getShipping($row['shipping'])}
 			{$this->getAdditionalImageLinks($row['additional_image_link'])}
 		</item>
 XML;
+    }
+
+    /**
+     * @param array $row
+     * @param string $attrKey
+     * @param string $tagKey
+     *
+     * @return string
+     */
+    private function getOptionalProductAttr(array $row, string $attrKey, string $tagKey = ''): string
+    {
+        if ($tagKey === '') {
+            $tagKey = $attrKey;
+        }
+        if (!empty($row[$attrKey])) {
+            return "<g:$tagKey><![CDATA[$row[$attrKey]]]></g:$tagKey>";
+        }
+        return '';
     }
 
     private function getAdditionalImageLinks(array $imageLinks): string

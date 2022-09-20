@@ -102,14 +102,11 @@ final class ArrayToXmlConverterTest extends TestCase
 			<g:availability><![CDATA[in_stock]]></g:availability>
             <g:product_type><![CDATA[Duo- Bettdecke]]></g:product_type>
 			<g:price><![CDATA[230,00 EUR]]></g:price>
-			<g:brand><![CDATA[f.a.n. Frankenstolz]]></g:brand>
-			<g:gtin><![CDATA[4000863525821]]></g:gtin>
             <g:mpn><![CDATA[FAN-53KBBW01V0011-155/220]]></g:mpn>
-            <g:color><![CDATA[]]></g:color>
-            <g:gender><![CDATA[]]></g:gender>
-            <g:material><![CDATA[Kaschmir]]></g:material>
-            <g:pattern><![CDATA[]]></g:pattern>
+			<g:brand><![CDATA[f.a.n. Frankenstolz]]></g:brand>
             <g:item_group_id><![CDATA[FAN-53KBBW01V0011]]></g:item_group_id>
+			<g:gtin><![CDATA[4000863525821]]></g:gtin>
+            <g:material><![CDATA[Kaschmir]]></g:material>
             <g:product_detail>
                 <g:section_name><![CDATA[General]]></g:section_name>
                 <g:attribute_name><![CDATA[Material Stoff]]></g:attribute_name>

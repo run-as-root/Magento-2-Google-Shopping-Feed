@@ -4,7 +4,7 @@ Generate feed with product data.
 
 ## Installations
 ```
-composer require run_as_root/ext-magento2-run_as_root-feed
+composer require run_as_root/ext-magento2-google-shopping-feed
 bin/magento setup:upgrade
 ```
 
@@ -12,7 +12,7 @@ bin/magento setup:upgrade
 
 ### Feed generation
 
-Generate product feed every 15 minutes with minimal required attributes, for each storeview.  
+Generate product feed every 2 hours with minimal required attributes, for each storeview.  
 Places file into `pub/run_as_root/feed/%s_store_%s_feed.csv`.
 
 ## Technical Specification
@@ -51,9 +51,9 @@ See configuration list here: `\RunAsRoot\GoogleShoppingFeed\Enum\AttributesToImp
 Provides attribute data provider (handler) of type `\RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AttributeHandlerInterface`, by `AttributeConfigData` DTO.
 
 #### `\RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AttributeHandlerInterface`
-Generic interface for attribute data prviders.  
-Each attrbiute has its own data provider, that incapsulates current interface.  
-Data provider for spcific attribute is configured here `\RunAsRoot\GoogleShoppingFeed\Enum\AttributesToImportEnumInterface::ATTRIBUTES`.
+Generic interface for attribute data providers.  
+Each attribute has its own data provider, that incapsulates current interface.  
+Data provider for specific attribute is configured here `\RunAsRoot\GoogleShoppingFeed\Enum\AttributesToImportEnumInterface::ATTRIBUTES`.
 
 ### Services
 

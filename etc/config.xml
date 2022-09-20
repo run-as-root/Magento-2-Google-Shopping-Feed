@@ -3,7 +3,7 @@
     <default>
         <run_as_root_product_feed>
             <general>
-                <cron_schedule>*/15 * * * *</cron_schedule>
+                <cron_schedule>0 */2 * * *</cron_schedule>
             </general>
         </run_as_root_product_feed>
     </default>

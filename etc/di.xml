@@ -26,10 +26,10 @@
             <argument name="attributeCode" xsi:type="string">pattern</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductTypeProvider"
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SizeProvider"
                  type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler">
         <arguments>
-            <argument name="attributeCode" xsi:type="string">product_type</argument>
+            <argument name="attributeCode" xsi:type="string">size</argument>
         </arguments>
     </virtualType>
     <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\GenderProvider"
