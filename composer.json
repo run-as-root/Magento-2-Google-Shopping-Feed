@@ -20,7 +20,7 @@
         "phpunit/phpunit": "*"
     },
     "license": [
-        "Proprietary"
+        "MIT"
     ],
     "autoload": {
         "files": [
