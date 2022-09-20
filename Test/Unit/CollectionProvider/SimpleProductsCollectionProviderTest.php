@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\CollectionProvider;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\CollectionProvider;
 
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\CollectionProvider\SimpleProductsCollectionProvider;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\SimpleProductsCollectionProvider;
 
 final class SimpleProductsCollectionProviderTest extends TestCase
 {

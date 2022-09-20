@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\SourceModel;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\SourceModel;
 
 use Magento\Catalog\Api\CategoryListInterface;
 use Magento\Catalog\Api\Data\CategorySearchResultsInterface;
@@ -11,7 +11,7 @@ use Magento\Framework\Api\SearchCriteria;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\SourceModel\CategoriesSourceModel;
+use RunAsRoot\GoogleShoppingFeed\SourceModel\CategoriesSourceModel;
 
 final class CategoriesSourceModelTest extends TestCase
 {

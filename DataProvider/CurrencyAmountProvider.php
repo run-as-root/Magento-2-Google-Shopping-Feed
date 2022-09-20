@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider;
 
 use InvalidArgumentException;
-use RunAsRoot\Feed\Data\AttributeConfigData;
-use RunAsRoot\Feed\Data\AttributeConfigDataFactory;
-use RunAsRoot\Feed\Data\AttributeConfigDataList;
-use RunAsRoot\Feed\Enum\AttributesToImportEnumInterface;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigData;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataFactory;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
+use RunAsRoot\GoogleShoppingFeed\Enum\AttributesToImportEnumInterface;
 
 class AttributesConfigListProvider
 {

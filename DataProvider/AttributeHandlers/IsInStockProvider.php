@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\InventorySales\Model\AreProductsSalable;
 use Magento\InventorySalesApi\Api\Data\IsProductSalableResultInterface;
-use RunAsRoot\Feed\Enum\GoogleShoppingAviabilityEnumInterface;
-use RunAsRoot\Feed\Service\GetAssignedStockIdForStore;
+use RunAsRoot\GoogleShoppingFeed\Enum\GoogleShoppingAviabilityEnumInterface;
+use RunAsRoot\GoogleShoppingFeed\Service\GetAssignedStockIdForStore;
 
 class IsInStockProvider implements AttributeHandlerInterface
 {

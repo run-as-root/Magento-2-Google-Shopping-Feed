@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\ConfigProvider;
+namespace RunAsRoot\GoogleShoppingFeed\ConfigProvider;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\Service;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\Service;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
@@ -12,17 +12,17 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\CollectionProvider\ProductsCollectionProvider;
-use RunAsRoot\Feed\ConfigProvider\FeedConfigProvider;
-use RunAsRoot\Feed\Converter\ArrayToXmlConverter;
-use RunAsRoot\Feed\Data\AttributeConfigDataList;
-use RunAsRoot\Feed\DataProvider\AllowedCategoryIdsProvider;
-use RunAsRoot\Feed\DataProvider\AttributesConfigListProvider;
-use RunAsRoot\Feed\Exception\GenerateFeedForStoreException;
-use RunAsRoot\Feed\Mapper\ProductToFeedAttributesRowMapper;
-use RunAsRoot\Feed\Service\GenerateFeedForStore;
-use RunAsRoot\Feed\Writer\FileWriter;
-use RunAsRoot\Feed\Writer\XmlFileWriterProvider;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ProductsCollectionProvider;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
+use RunAsRoot\GoogleShoppingFeed\Converter\ArrayToXmlConverter;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributesConfigListProvider;
+use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
+use RunAsRoot\GoogleShoppingFeed\Mapper\ProductToFeedAttributesRowMapper;
+use RunAsRoot\GoogleShoppingFeed\Service\GenerateFeedForStore;
+use RunAsRoot\GoogleShoppingFeed\Writer\FileWriter;
+use RunAsRoot\GoogleShoppingFeed\Writer\XmlFileWriterProvider;
 
 final class GenerateFeedForStoreTest extends TestCase
 {

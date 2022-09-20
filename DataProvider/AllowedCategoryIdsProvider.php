@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider;
 
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
-use RunAsRoot\Feed\ConfigProvider\FeedConfigProvider;
-use RunAsRoot\Feed\Registry\FeedRegistry;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
+use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
 
 class AllowedCategoryIdsProvider
 {

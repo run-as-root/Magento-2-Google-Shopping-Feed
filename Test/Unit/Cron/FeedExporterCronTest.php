@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\Cron;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\Cron;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\Cron\FeedExporterCron;
-use RunAsRoot\Feed\Exception\GenerateFeedForStoreException;
-use RunAsRoot\Feed\Service\GenerateFeedService;
+use RunAsRoot\GoogleShoppingFeed\Cron\FeedExporterCron;
+use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
+use RunAsRoot\GoogleShoppingFeed\Service\GenerateFeedService;
 
 final class FeedExporterCronTest extends TestCase
 {

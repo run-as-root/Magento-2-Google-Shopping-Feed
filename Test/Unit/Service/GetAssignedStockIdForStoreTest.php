@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\Service;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\Service;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\InventorySales\Model\ResourceModel\GetAssignedStockIdForWebsite;
@@ -11,7 +11,7 @@ use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\Service\GetAssignedStockIdForStore;
+use RunAsRoot\GoogleShoppingFeed\Service\GetAssignedStockIdForStore;
 
 final class GetAssignedStockIdForStoreTest extends TestCase
 {

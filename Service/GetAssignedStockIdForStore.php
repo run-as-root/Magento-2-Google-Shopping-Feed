@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Service;
+namespace RunAsRoot\GoogleShoppingFeed\Service;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\InventorySales\Model\ResourceModel\GetAssignedStockIdForWebsite;

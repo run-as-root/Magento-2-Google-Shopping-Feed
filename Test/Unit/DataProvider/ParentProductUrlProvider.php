@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type;
 use Magento\Framework\Exception\NoSuchEntityException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\ParentProductIdProvider;
-use RunAsRoot\Feed\DataProvider\ParentProductProvider;
-use RunAsRoot\Feed\DataProvider\ProductProvider;
-use RunAsRoot\Feed\Registry\FeedRegistry;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductIdProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ProductProvider;
+use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
 
 final class ParentProductUrlProvider extends TestCase
 {

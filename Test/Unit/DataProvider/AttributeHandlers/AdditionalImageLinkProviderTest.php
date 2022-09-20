@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Api\Data\ProductAttributeMediaGalleryEntryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\AdditionalImageLinkProvider;
-use RunAsRoot\Feed\DataProvider\ParentProductProvider;
-use RunAsRoot\Feed\DataProvider\ProductImageUrlProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AdditionalImageLinkProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ProductImageUrlProvider;
 
 final class AdditionalImageLinkProviderTest extends TestCase
 {

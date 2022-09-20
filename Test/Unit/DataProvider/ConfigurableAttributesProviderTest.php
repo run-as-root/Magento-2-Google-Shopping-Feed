@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
@@ -10,8 +10,8 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable\Attribute;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\ConfigurableAttrsProvider;
-use RunAsRoot\Feed\Registry\FeedRegistry;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ConfigurableAttrsProvider;
+use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
 
 final class ConfigurableAttributesProviderTest extends TestCase
 {

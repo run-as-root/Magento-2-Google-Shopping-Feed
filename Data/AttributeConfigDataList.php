@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Data;
+namespace RunAsRoot\GoogleShoppingFeed\Data;
 
 use InvalidArgumentException;
 

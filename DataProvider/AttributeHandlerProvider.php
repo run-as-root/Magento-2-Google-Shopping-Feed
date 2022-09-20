@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider;
 
-use RunAsRoot\Feed\Data\AttributeConfigData;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\AttributeHandlerInterface;
-use RunAsRoot\Feed\Exception\HandlerIsNotSpecifiedException;
-use RunAsRoot\Feed\Exception\WrongInstanceException;
-use RunAsRoot\Feed\Factory\AttributeHandlerFactory;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigData;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AttributeHandlerInterface;
+use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
+use RunAsRoot\GoogleShoppingFeed\Exception\WrongInstanceException;
+use RunAsRoot\GoogleShoppingFeed\Factory\AttributeHandlerFactory;
 
 class AttributeHandlerProvider
 {

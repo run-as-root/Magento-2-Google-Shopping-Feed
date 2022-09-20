@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider;
 
 use Magento\Catalog\Model\ResourceModel\Product;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\Entity\Attribute\Frontend\AbstractFrontend;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\ProductAttributeLabelProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ProductAttributeLabelProvider;
 
 final class ProductAttributeLabelProviderTest extends TestCase
 {

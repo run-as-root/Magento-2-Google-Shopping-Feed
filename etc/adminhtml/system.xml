@@ -30,7 +30,7 @@
                        canRestore="1">
                     <label>Cron Schedule</label>
                     <comment>By default cron will run every 15 minutes.</comment>
-                    <source_model>RunAsRoot\Feed\SourceModel\FrequencySourceModel</source_model>
+                    <source_model>RunAsRoot\GoogleShoppingFeed\SourceModel\FrequencySourceModel</source_model>
                     <depends>
                         <field id="run_as_root_product_feed/general/enabled">1</field>
                     </depends>
@@ -48,7 +48,7 @@
                     </depends>
                     <label>Category Whitelist</label>
                     <comment>Only selected categories will be included in feed generation.</comment>
-                    <source_model>RunAsRoot\Feed\SourceModel\CategoriesSourceModel</source_model>
+                    <source_model>RunAsRoot\GoogleShoppingFeed\SourceModel\CategoriesSourceModel</source_model>
                 </field>
                 <field id="category_blacklist"
                        translate="label"
@@ -63,7 +63,7 @@
                     </depends>
                     <label>Category Blacklist</label>
                     <comment>Selected categories will be excluded from feed generation. Blacklist has higher priority than whitelist</comment>
-                    <source_model>RunAsRoot\Feed\SourceModel\CategoriesSourceModel</source_model>
+                    <source_model>RunAsRoot\GoogleShoppingFeed\SourceModel\CategoriesSourceModel</source_model>
                     <can_be_empty>1</can_be_empty>
                 </field>
             </group>

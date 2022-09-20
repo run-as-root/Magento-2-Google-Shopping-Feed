@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Registry;
+namespace RunAsRoot\GoogleShoppingFeed\Registry;
 
 class FeedRegistry
 {

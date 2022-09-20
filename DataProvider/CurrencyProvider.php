@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider;
 
 use Magento\Directory\Model\Currency;
 use Magento\Framework\Exception\LocalizedException;

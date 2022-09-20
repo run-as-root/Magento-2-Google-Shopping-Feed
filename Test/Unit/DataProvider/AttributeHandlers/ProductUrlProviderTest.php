@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Url;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\ConfigProvider\UrlSuffixProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ProductUrlProvider;
-use RunAsRoot\Feed\DataProvider\ParentProductProvider;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\UrlSuffixProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductUrlProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
 
 final class ProductUrlProviderTest extends TestCase
 {

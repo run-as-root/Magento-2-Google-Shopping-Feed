@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product as ProductResource;

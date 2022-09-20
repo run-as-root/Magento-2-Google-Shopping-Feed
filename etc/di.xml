@@ -3,80 +3,80 @@
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="run_as_root_product_feed_exporter_command" xsi:type="object">RunAsRoot\Feed\Console\Command\TriggerProductFeedCommand</item>
+                <item name="run_as_root_product_feed_exporter_command" xsi:type="object">RunAsRoot\GoogleShoppingFeed\Console\Command\TriggerProductFeedCommand</item>
             </argument>
         </arguments>
     </type>
     <!-- Select or Multiselect Attributes -->
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\ManufacturerProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SelectAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ManufacturerProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">manufacturer</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\ColorProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SelectAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ColorProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">color</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\PatternProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SelectAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\PatternProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">pattern</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\ProductTypeProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SelectAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductTypeProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">product_type</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\GenderProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SelectAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\GenderProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">gender</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\MaterialProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SelectAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\MaterialProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">material</argument>
         </arguments>
     </virtualType>
     <!-- Simple Attributes -->
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\EanProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\EanProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">ean</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\DescriptionProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\DescriptionProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">description</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\NameProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\NameProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">name</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\SkuProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SkuProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">sku</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\MaterialClothProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\MaterialClothProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">material_cloth</argument>
         </arguments>
     </virtualType>
-    <virtualType name="RunAsRoot\Feed\DataProvider\AttributeHandlers\SpecialPriceProvider"
-                 type="RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SpecialPriceProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
         <arguments>
             <argument name="attributeCode" xsi:type="string">special_price</argument>
         </arguments>

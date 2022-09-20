@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\Service;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\Service;
 
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\Exception\HandlerIsNotSpecifiedException;
-use RunAsRoot\Feed\Exception\WrongInstanceException;
-use RunAsRoot\Feed\Registry\FeedRegistry;
-use RunAsRoot\Feed\Service\GenerateFeedForStore;
-use RunAsRoot\Feed\Service\GenerateFeedService;
+use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
+use RunAsRoot\GoogleShoppingFeed\Exception\WrongInstanceException;
+use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
+use RunAsRoot\GoogleShoppingFeed\Service\GenerateFeedForStore;
+use RunAsRoot\GoogleShoppingFeed\Service\GenerateFeedService;
 
 final class GenerateFeedServiceTest extends TestCase
 {

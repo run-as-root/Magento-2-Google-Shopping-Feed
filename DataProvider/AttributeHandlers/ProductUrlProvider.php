@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Url;
-use RunAsRoot\Feed\ConfigProvider\UrlSuffixProvider;
-use RunAsRoot\Feed\DataProvider\ParentProductProvider;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\UrlSuffixProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
 
 class ProductUrlProvider implements AttributeHandlerInterface
 {

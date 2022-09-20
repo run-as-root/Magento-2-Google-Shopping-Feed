@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Type;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\ChildProductParamsProvider;
-use RunAsRoot\Feed\DataProvider\ConfigurableAttrsProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ChildProductParamsProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ConfigurableAttrsProvider;
 
 final class ChildProductParamsProviderTest extends TestCase
 {

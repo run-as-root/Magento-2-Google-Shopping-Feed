@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Enum;
+namespace RunAsRoot\GoogleShoppingFeed\Enum;
 
 interface GoogleShoppingAviabilityEnumInterface
 {

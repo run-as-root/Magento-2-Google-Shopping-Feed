@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\Mapper;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\Mapper;
 
 use Magento\Catalog\Model\Product;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\Data\AttributeConfigData;
-use RunAsRoot\Feed\Data\AttributeConfigDataList;
-use RunAsRoot\Feed\DataProvider\AttributeHandlerProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\AttributeHandlerInterface;
-use RunAsRoot\Feed\Mapper\ProductToFeedAttributesRowMapper;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigData;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlerProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AttributeHandlerInterface;
+use RunAsRoot\GoogleShoppingFeed\Mapper\ProductToFeedAttributesRowMapper;
 
 final class ProductToFeedAttributesRowMapperTest extends TestCase
 {

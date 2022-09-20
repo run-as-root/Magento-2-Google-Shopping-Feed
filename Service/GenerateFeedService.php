@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Service;
+namespace RunAsRoot\GoogleShoppingFeed\Service;
 
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
-use RunAsRoot\Feed\Registry\FeedRegistry;
+use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
 
 use function gc_collect_cycles;
 

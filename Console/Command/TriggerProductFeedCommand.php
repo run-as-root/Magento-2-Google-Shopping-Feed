@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Console\Command;
+namespace RunAsRoot\GoogleShoppingFeed\Console\Command;
 
 use Magento\Framework\App\Area;
 use Magento\Framework\App\State;
@@ -12,7 +12,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use RunAsRoot\Feed\Service\GenerateFeedService;
+use RunAsRoot\GoogleShoppingFeed\Service\GenerateFeedService;
 
 class TriggerProductFeedCommand extends Command
 {

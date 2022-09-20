@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\SourceModel;
+namespace RunAsRoot\GoogleShoppingFeed\SourceModel;
 
 use Magento\Catalog\Api\CategoryListInterface;
 use Magento\Catalog\Api\Data\CategorySearchResultsInterface;

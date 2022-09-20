@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider;
 
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\ConfigProvider\FeedConfigProvider;
-use RunAsRoot\Feed\DataProvider\AllowedCategoryIdsProvider;
-use RunAsRoot\Feed\Registry\FeedRegistry;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
+use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
 
 final class AllowedCategoryIdsProviderTest extends TestCase
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider;
 
 use Magento\Catalog\Model\Product\Image\UrlBuilder;
 use Magento\Framework\Escaper;

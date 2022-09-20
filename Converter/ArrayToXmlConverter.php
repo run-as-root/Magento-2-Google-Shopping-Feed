@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Converter;
+namespace RunAsRoot\GoogleShoppingFeed\Converter;
 
 use Magento\Framework\Stdlib\DateTime\DateTime;
 

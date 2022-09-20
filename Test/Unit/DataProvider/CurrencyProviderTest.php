@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider;
 
 use Magento\Directory\Model\Currency;
 use Magento\Store\Model\Store;
 use Magento\Store\Model\StoreManagerInterface;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\CurrencyProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\CurrencyProvider;
 
 final class CurrencyProviderTest extends TestCase
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\Query;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\Query;
 
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Select;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\Query\ShippingTableRateQuery;
+use RunAsRoot\GoogleShoppingFeed\Query\ShippingTableRateQuery;
 
 class ShippingTableRateQueryTest extends TestCase
 {

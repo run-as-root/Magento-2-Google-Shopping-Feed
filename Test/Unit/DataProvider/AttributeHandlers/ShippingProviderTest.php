@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\App\ResourceConnection;
@@ -10,11 +10,11 @@ use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Select;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\ConfigProvider\AllowedCountriesProvider;
-use RunAsRoot\Feed\ConfigProvider\TableRateConditionProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ShippingProvider;
-use RunAsRoot\Feed\DataProvider\CurrencyAmountProvider;
-use RunAsRoot\Feed\Query\ShippingTableRateQuery;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\AllowedCountriesProvider;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\TableRateConditionProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ShippingProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\CurrencyAmountProvider;
+use RunAsRoot\GoogleShoppingFeed\Query\ShippingTableRateQuery;
 
 final class ShippingProviderTest extends TestCase
 {

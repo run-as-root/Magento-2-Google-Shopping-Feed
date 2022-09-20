@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ProductDetailProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandler;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandlerFactory;
-use RunAsRoot\Feed\DataProvider\ProductAttributeLabelProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductDetailProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandlerFactory;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ProductAttributeLabelProvider;
 
 final class ProductDetailProviderTest extends TestCase
 {

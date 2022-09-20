@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Framework\ObjectManagerInterface;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\SelectAttributeHandler;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\SelectAttributeHandlerFactory;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandlerFactory;
 
 final class SelectAttributeHandlerFactoryTest extends TestCase
 {

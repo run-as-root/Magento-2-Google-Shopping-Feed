@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit;
 
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Api\WebsiteRepositoryInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\Writer\FileWriter;
-use RunAsRoot\Feed\Writer\XmlFileWriterProvider;
-use RunAsRoot\Feed\Writer\FileWriterFactory;
+use RunAsRoot\GoogleShoppingFeed\Writer\FileWriter;
+use RunAsRoot\GoogleShoppingFeed\Writer\XmlFileWriterProvider;
+use RunAsRoot\GoogleShoppingFeed\Writer\FileWriterFactory;
 
 final class XmlFileWriterProviderTest extends TestCase
 {

@@ -2,7 +2,7 @@
 
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="default">
-        <job instance="RunAsRoot\Feed\Cron\FeedExporterCron" method="run" name="run_as_root_product_feed_exporter_cron">
+        <job instance="RunAsRoot\GoogleShoppingFeed\Cron\FeedExporterCron" method="run" name="run_as_root_product_feed_exporter_cron">
             <config_path>run_as_root_product_feed/general/cron_schedule</config_path>
         </job>
     </group>

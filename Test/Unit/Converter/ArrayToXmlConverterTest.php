@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\Converter;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\Converter;
 
 use Magento\Framework\Stdlib\DateTime\DateTime;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\Converter\ArrayToXmlConverter;
+use RunAsRoot\GoogleShoppingFeed\Converter\ArrayToXmlConverter;
 
 final class ArrayToXmlConverterTest extends TestCase
 {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider;
 
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
-use RunAsRoot\Feed\Registry\FeedRegistry;
+use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
 
 class ParentProductIdProvider
 {

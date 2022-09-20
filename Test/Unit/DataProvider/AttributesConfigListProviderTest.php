@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\Data\AttributeConfigData;
-use RunAsRoot\Feed\Data\AttributeConfigDataFactory;
-use RunAsRoot\Feed\Data\AttributeConfigDataList;
-use RunAsRoot\Feed\DataProvider\AttributesConfigListProvider;
-use RunAsRoot\Feed\Enum\AttributesToImportEnumInterface;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigData;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataFactory;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributesConfigListProvider;
+use RunAsRoot\GoogleShoppingFeed\Enum\AttributesToImportEnumInterface;
 
 final class AttributesConfigListProviderTest extends TestCase
 {

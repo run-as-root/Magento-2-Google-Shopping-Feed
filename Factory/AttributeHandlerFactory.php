@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Factory;
+namespace RunAsRoot\GoogleShoppingFeed\Factory;
 
 use Magento\Framework\ObjectManagerInterface;
-use RunAsRoot\Feed\Data\AttributeConfigData;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\AttributeHandlerInterface;
-use RunAsRoot\Feed\Exception\HandlerIsNotSpecifiedException;
-use RunAsRoot\Feed\Exception\WrongInstanceException;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigData;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AttributeHandlerInterface;
+use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
+use RunAsRoot\GoogleShoppingFeed\Exception\WrongInstanceException;
 
 class AttributeHandlerFactory
 {

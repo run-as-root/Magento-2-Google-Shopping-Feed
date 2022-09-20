@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ItemGroupIdProvider;
-use RunAsRoot\Feed\DataProvider\ParentProductProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ItemGroupIdProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
 
 final class ItemGroupIdProviderTest extends TestCase
 {

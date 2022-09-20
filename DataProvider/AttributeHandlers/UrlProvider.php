@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Url;
 use Magento\Store\Model\StoreManagerInterface;
-use RunAsRoot\Feed\DataProvider\ChildProductParamsProvider;
-use RunAsRoot\Feed\DataProvider\ParentProductProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ChildProductParamsProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
 
 class UrlProvider implements AttributeHandlerInterface
 {

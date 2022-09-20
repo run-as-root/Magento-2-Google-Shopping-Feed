@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\LocalizedException;
@@ -12,9 +12,9 @@ use Magento\InventorySales\Model\IsProductSalableResult;
 use Magento\Store\Model\Store;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\IsInStockProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandler;
-use RunAsRoot\Feed\Service\GetAssignedStockIdForStore;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\IsInStockProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler;
+use RunAsRoot\GoogleShoppingFeed\Service\GetAssignedStockIdForStore;
 
 final class IsInStockProviderTest extends TestCase
 {

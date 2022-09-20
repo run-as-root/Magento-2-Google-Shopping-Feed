@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\LocalizedException;
-use RunAsRoot\Feed\DataProvider\ProductAttributeLabelProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ProductAttributeLabelProvider;
 
 class ProductDetailProvider implements AttributeHandlerInterface
 {

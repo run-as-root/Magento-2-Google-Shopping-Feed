@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Framework\ObjectManagerInterface;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandler;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\SimpleAttributeHandlerFactory;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandlerFactory;
 
 final class SimpleAttributeHandlerFactoryTest extends TestCase
 {

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider;
 
 use Magento\Catalog\Model\Product\Image\UrlBuilder;
 use Magento\Framework\Escaper;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\DataProvider\ProductImageUrlProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ProductImageUrlProvider;
 
 final class ProductImageProviderTest extends TestCase
 {

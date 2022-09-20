@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\ConfigProvider;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\ConfigProvider;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\ConfigProvider\FeedConfigProvider;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
 
 final class FeedConfigProviderTest extends TestCase
 {

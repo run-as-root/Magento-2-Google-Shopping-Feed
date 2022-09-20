@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use RunAsRoot\Feed\ConfigProvider\AllowedCountriesProvider;
-use RunAsRoot\Feed\ConfigProvider\TableRateConditionProvider;
-use RunAsRoot\Feed\DataProvider\CurrencyAmountProvider;
-use RunAsRoot\Feed\Query\ShippingTableRateQuery;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\AllowedCountriesProvider;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\TableRateConditionProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\CurrencyAmountProvider;
+use RunAsRoot\GoogleShoppingFeed\Query\ShippingTableRateQuery;
 
 class ShippingProvider implements AttributeHandlerInterface
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\UrlInterface;
-use RunAsRoot\Feed\CollectionProvider\LeastLevelCategoryCollectionProvider;
-use RunAsRoot\Feed\DataProvider\AllowedCategoryIdsProvider;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\LeastLevelCategoryCollectionProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
 
 use function array_intersect;
 use function reset;

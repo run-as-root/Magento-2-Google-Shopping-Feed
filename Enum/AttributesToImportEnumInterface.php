@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Enum;
+namespace RunAsRoot\GoogleShoppingFeed\Enum;
 
-use RunAsRoot\Feed\Data\AttributeConfigData;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\AdditionalImageLinkProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\CategoryUrlProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ColorProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\DescriptionProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\EanProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\GenderProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ImageLinkProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\IsInStockProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ItemGroupIdProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ManufacturerProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\MaterialProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\NameProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\PatternProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\PriceProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ProductDetailProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ProductTypeProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ProductUrlProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\ShippingProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\SkuProvider;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigData;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AdditionalImageLinkProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\CategoryUrlProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ColorProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\DescriptionProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\EanProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\GenderProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ImageLinkProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\IsInStockProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ItemGroupIdProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ManufacturerProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\MaterialProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\NameProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\PatternProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\PriceProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductDetailProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductTypeProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductUrlProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ShippingProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SkuProvider;
 
 interface AttributesToImportEnumInterface
 {

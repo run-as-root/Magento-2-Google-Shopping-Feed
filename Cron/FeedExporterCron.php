@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Cron;
+namespace RunAsRoot\GoogleShoppingFeed\Cron;
 
-use RunAsRoot\Feed\Exception\GenerateFeedForStoreException;
-use RunAsRoot\Feed\Service\GenerateFeedService;
+use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
+use RunAsRoot\GoogleShoppingFeed\Service\GenerateFeedService;
 
 class FeedExporterCron
 {

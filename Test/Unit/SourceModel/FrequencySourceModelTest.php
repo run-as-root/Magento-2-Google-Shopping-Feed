@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\SourceModel;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\SourceModel;
 
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\SourceModel\FrequencySourceModel;
+use RunAsRoot\GoogleShoppingFeed\SourceModel\FrequencySourceModel;
 
 final class FrequencySourceModelTest extends TestCase
 {

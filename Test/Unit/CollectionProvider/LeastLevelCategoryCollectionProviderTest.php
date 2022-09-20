@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\CollectionProvider;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\CollectionProvider;
 
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Framework\Data\Collection as DataCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\CollectionProvider\LeastLevelCategoryCollectionProvider;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\LeastLevelCategoryCollectionProvider;
 
 final class LeastLevelCategoryCollectionProviderTest extends TestCase
 {

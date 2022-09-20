@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Service;
+namespace RunAsRoot\GoogleShoppingFeed\Service;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
@@ -14,16 +14,16 @@ use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
-use RunAsRoot\Feed\CollectionProvider\ProductsCollectionProvider;
-use RunAsRoot\Feed\ConfigProvider\FeedConfigProvider;
-use RunAsRoot\Feed\Converter\ArrayToXmlConverter;
-use RunAsRoot\Feed\DataProvider\AllowedCategoryIdsProvider;
-use RunAsRoot\Feed\DataProvider\AttributesConfigListProvider;
-use RunAsRoot\Feed\Exception\GenerateFeedForStoreException;
-use RunAsRoot\Feed\Exception\HandlerIsNotSpecifiedException;
-use RunAsRoot\Feed\Exception\WrongInstanceException;
-use RunAsRoot\Feed\Mapper\ProductToFeedAttributesRowMapper;
-use RunAsRoot\Feed\Writer\XmlFileWriterProvider;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ProductsCollectionProvider;
+use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
+use RunAsRoot\GoogleShoppingFeed\Converter\ArrayToXmlConverter;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributesConfigListProvider;
+use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
+use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
+use RunAsRoot\GoogleShoppingFeed\Exception\WrongInstanceException;
+use RunAsRoot\GoogleShoppingFeed\Mapper\ProductToFeedAttributesRowMapper;
+use RunAsRoot\GoogleShoppingFeed\Writer\XmlFileWriterProvider;
 
 use function in_array;
 

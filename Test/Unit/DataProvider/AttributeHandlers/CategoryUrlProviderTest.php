@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit\DataProvider\AttributeHandlers;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\Product;
@@ -10,9 +10,9 @@ use Magento\Catalog\Model\ResourceModel\Category\Collection;
 use Magento\Framework\UrlInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\CollectionProvider\LeastLevelCategoryCollectionProvider;
-use RunAsRoot\Feed\DataProvider\AllowedCategoryIdsProvider;
-use RunAsRoot\Feed\DataProvider\AttributeHandlers\CategoryUrlProvider;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\LeastLevelCategoryCollectionProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\CategoryUrlProvider;
 
 final class CategoryUrlProviderTest extends TestCase
 {

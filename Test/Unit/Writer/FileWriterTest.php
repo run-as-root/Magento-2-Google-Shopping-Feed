@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Test\Unit;
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit;
 
 use Magento\Framework\Filesystem;
 use Magento\Framework\Filesystem\Directory\WriteInterface;
 use Magento\Framework\Filesystem\File\WriteInterface as FileWriteInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use RunAsRoot\Feed\Writer\FileWriter;
+use RunAsRoot\GoogleShoppingFeed\Writer\FileWriter;
 
 final class FileWriterTest extends TestCase
 {

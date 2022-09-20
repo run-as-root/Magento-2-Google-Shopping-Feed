@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace RunAsRoot\Feed\Mapper;
+namespace RunAsRoot\GoogleShoppingFeed\Mapper;
 
 use Magento\Catalog\Model\Product;
-use RunAsRoot\Feed\Data\AttributeConfigDataList;
-use RunAsRoot\Feed\DataProvider\AttributeHandlerProvider;
-use RunAsRoot\Feed\Exception\HandlerIsNotSpecifiedException;
-use RunAsRoot\Feed\Exception\WrongInstanceException;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlerProvider;
+use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
+use RunAsRoot\GoogleShoppingFeed\Exception\WrongInstanceException;
 
 class ProductToFeedAttributesRowMapper
 {
