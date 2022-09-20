@@ -1,11 +1,3 @@
----
-title: Feed Generation
-module_name: RunAsRoot_Feed
-author: David Lambauer, Matthias Walter, Rico Neitzel
-send_questions_to: david@run-as-root.sh
-category: System
----
-
 ## General
 
 Generate feed with product data.
