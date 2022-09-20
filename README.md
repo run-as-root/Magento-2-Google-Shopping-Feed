@@ -1,11 +1,14 @@
-## General
+# Magento 2 Google Shopping Feed
 
-Generate feed with product data.
+This module regularly creates a Google Shopping Feed that you can submit to your Google Merchant Center. 
 
 ## Installations
-```
+
+Follow the steps below to install the extension.
+
+```bash
 composer require run_as_root/ext-magento2-google-shopping-feed
-bin/magento setup:upgrade
+php bin/magento setup:upgrade
 ```
 
 ## Features
