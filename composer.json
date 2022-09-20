@@ -1,0 +1,33 @@
+{
+    "name": "run_as_root/ext-magento2-run_as_root-feed",
+    "version": "1.0.0",
+    "description": "This module provides a scheduled product feed csv export.",
+    "type": "magento2-module",
+    "require": {
+        "magento/framework": "*",
+        "magento/module-store": "*",
+        "psr/log": "*",
+        "magento/module-configurable-product": "*",
+        "magento/module-import-export": "*",
+        "magento/module-inventory-sales": "*",
+        "magento/module-inventory-sales-api": "*",
+        "magento/module-catalog": "*",
+        "magento/module-review": "*",
+        "magento/module-eav": "*",
+        "magento/module-directory": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "license": [
+        "Proprietary"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "RunAsRoot\\Feed\\": ""
+        }
+    }
+}
