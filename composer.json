@@ -3,6 +3,42 @@
     "version": "1.2.0",
     "description": "This module provides a google shopping product feed csv export.",
     "type": "magento2-module",
+    "readme": "README.md",
+    "keywords": [
+        "Magento 2",
+        "Google Shopping Feed",
+        "Magento 2 Extension"
+    ],
+    "homepage": "https://github.com/run-as-root/Magento-2-Google-Shopping-Feed",
+    "authors": [
+        {
+            "homepage": "https://run-as-root.sh/",
+            "email": "david@run-as-root.sh",
+            "name": "David Lambauer",
+            "role": "CEO"
+        },
+        {
+            "role": "Magento 2 Developer",
+            "name": "Denys Sliepnov",
+            "email": "denys.sliepnov@run-as-root.sh"
+        },
+        {
+            "name": "Cristiano Pacheco",
+            "role": "Magento 2 Developer",
+            "email": "cristiano.pacheco@run-as-root.sh"
+        },
+        {
+            "role": "Magento 2 Developer",
+            "email": "vladyslav.sikailo@run-as-root.sh",
+            "name": "Vladyslav Sikailo"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/run-as-root/Magento-2-Google-Shopping-Feed",
+        "email": "david@run-as-root.sh",
+        "docs": "https://github.com/run-as-root/Magento-2-Google-Shopping-Feed/blob/main/README.md",
+        "issues": "https://github.com/run-as-root/Magento-2-Google-Shopping-Feed/issues"
+    },
     "require": {
         "magento/framework": "*",
         "magento/module-store": "*",
