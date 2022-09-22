@@ -67,7 +67,8 @@ class FileReader
                 $result[] = [
                     'path' => $dir->getPath() . DIRECTORY_SEPARATOR . $fileName,
                     'fileGenerationTime' => $fileGenerationTime,
-                    'link' => $storeMediaUrl . $dir,
+                    'link' => $storeMediaUrl . str_replace('media/', '', $dir->getPath())
+                        . DIRECTORY_SEPARATOR . $fileName,
                     'fileName' => $fileName,
                     'store' => $stores[1] ?? 'default'
                 ];
