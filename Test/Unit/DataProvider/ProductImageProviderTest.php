@@ -13,7 +13,7 @@ final class ProductImageProviderTest extends TestCase
 {
     private ProductImageUrlProvider $sut;
 
-    private string $imageUrl = 'https://app.seidenland.test/media/catalog/product/c/a/image.jpg';
+    private string $imageUrl = 'https://app.default.test/media/catalog/product/c/a/image.jpg';
     private string $imagePath = 'c/a/image.jpg';
 
     protected function setUp(): void

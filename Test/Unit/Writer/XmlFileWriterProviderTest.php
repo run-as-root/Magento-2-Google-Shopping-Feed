@@ -50,7 +50,7 @@ final class XmlFileWriterProviderTest extends TestCase
             ->with($storeId)
             ->willReturn($websiteMock);
 
-        $storeCode = 'seidenland_de';
+        $storeCode = 'default';
         $storeMock->expects($this->once())
             ->method('getCode')
             ->willReturn($storeCode);
@@ -67,7 +67,7 @@ final class XmlFileWriterProviderTest extends TestCase
 
         $fileWriterMock->expects($this->once())
             ->method('setDestination')
-            ->with('run_as_root/feed/base_store_seidenland_de_feed.xml')
+            ->with('run_as_root/feed/base_store_default_feed.xml')
             ->willReturnSelf();
 
         $this->sut->get($storeMock);

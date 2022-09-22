@@ -37,7 +37,7 @@ final class FileWriterTest extends TestCase
     {
         $streamMock = $this->getMockBuilder(FileWriteInterface::class)->getMock();
 
-        $destination = 'media/run_as_root/feed/base_store_seidenland_de_feed.xml';
+        $destination = 'media/run_as_root/feed/base_store_default_feed.xml';
         $this->sut->setDestination($destination);
 
         $this->mediaDirectoryMock

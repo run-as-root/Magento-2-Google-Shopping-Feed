@@ -56,7 +56,7 @@ final class ImageLinkProviderTest extends TestCase
             ->method('getImage')
             ->willReturn($image);
 
-        $productImageLink = 'https://app.seidenland.test/media/catalog/product/o/c/child-product-image.jpg';
+        $productImageLink = 'https://app.default.test/media/catalog/product/o/c/child-product-image.jpg';
 
         $this->productImageUrlProviderMock
             ->expects($this->once())
@@ -96,7 +96,7 @@ final class ImageLinkProviderTest extends TestCase
             ->method('getImage')
             ->willReturn($image);
 
-        $productImageLink = 'https://app.seidenland.test/media/catalog/product/o/c/parent-product-image.jpg';
+        $productImageLink = 'https://app.default.test/media/catalog/product/o/c/parent-product-image.jpg';
 
         $this->productImageUrlProviderMock
             ->expects($this->once())

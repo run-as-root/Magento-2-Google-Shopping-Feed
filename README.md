@@ -80,3 +80,7 @@ Performs iteration on all products provided by this collection provider `\RunAsR
 ### Add new attribute to feed
 1. Create new attribute data provider. @see interface `\RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AttributeHandlerInterface`.
 2. Add configuration for new attribute in `\RunAsRoot\GoogleShoppingFeed\Enum\AttributesToImportEnumInterface::ATTRIBUTES`.
+
+## Google Shopping Feeds Grid
+Generated feeds could be reviewed inside Admin Backoffice
+* Navigate to Marketing -> run_as_root -> Google Shopping Feed

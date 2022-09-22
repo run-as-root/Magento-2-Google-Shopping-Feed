@@ -81,4 +81,9 @@
             <argument name="attributeCode" xsi:type="string">special_price</argument>
         </arguments>
     </virtualType>
+
+    <preference for="RunAsRoot\GoogleShoppingFeed\Api\Data\FeedInterface"
+                type="RunAsRoot\GoogleShoppingFeed\Model\Feed" />
+    <preference for="RunAsRoot\GoogleShoppingFeed\Api\FeedRepositoryInterface"
+                type="RunAsRoot\GoogleShoppingFeed\Model\FeedRepository" />
 </config>

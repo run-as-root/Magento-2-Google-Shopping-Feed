@@ -82,7 +82,7 @@ final class CategoryUrlProviderTest extends TestCase
             ->method('getRequestPath')
             ->willReturn($requestPath);
 
-        $categoryUrl = 'https://www.seidenland.de/waschen-pflegen/speick-naturkosmetik';
+        $categoryUrl = 'https://www.default/waschen-pflegen/speick-naturkosmetik';
         $this->urlMock
             ->expects($this->once())
             ->method('getDirectUrl')

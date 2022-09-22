@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin" title="Admin">
+                <resource id="Magento_Backend::marketing" title="Marketing">
+                    <resource id="RunAsRoot_GoogleShoppingFeed::run_as_root" title="run_as_root" sortOrder="10">
+                        <resource id="RunAsRoot_GoogleShoppingFeed::google_shopping_feed"
+                                  title="run_as_root Google Shopping Feed"
+                                  sortOrder="10"/>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

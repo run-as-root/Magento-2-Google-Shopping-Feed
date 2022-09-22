@@ -33,16 +33,16 @@ final class ArrayToXmlConverterTest extends TestCase
     {
         return [
             [
-                'category_url' => 'https://app.seidenland.test/bettdecken/naturhaardecken',
+                'category_url' => 'https://app.default.test/bettdecken/naturhaardecken',
                 'color' => null,
                 'description' => 'product-description',
                 'ean' => '4000863525821',
                 'gender' => null,
                 'item_group_id' => 'FAN-53KBBW01V0011',
-                'image_link' => 'https://app.seidenland.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/c/a/cashmere-duo-winterdecke-53kbbw01v0009-frankenstolz-2_2.jpg',
+                'image_link' => 'https://app.default.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/c/a/cashmere-duo-winterdecke-53kbbw01v0009-frankenstolz-2_2.jpg',
                 'additional_image_link' => [
-                    0 => 'https://app.seidenland.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/o/e/oeko-tex-zertifizierte-schadstoffkontrollierte-bettwaren-frankenstolz_3_2_1_2_2_4_1_1_3_2_2_2_2.jpg',
-                    1 => 'https://app.seidenland.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/f/a/fan-bettwaren-made-in-germany_2_2_1_2_2_4_1_1_3_2_2_2_2.jpg'
+                    0 => 'https://app.default.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/o/e/oeko-tex-zertifizierte-schadstoffkontrollierte-bettwaren-frankenstolz_3_2_1_2_2_4_1_1_3_2_2_2_2.jpg',
+                    1 => 'https://app.default.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/f/a/fan-bettwaren-made-in-germany_2_2_1_2_2_4_1_1_3_2_2_2_2.jpg'
                 ],
                 'is_in_stock' => 'in_stock',
                 'manufacturer' => 'f.a.n. Frankenstolz',
@@ -81,7 +81,7 @@ final class ArrayToXmlConverterTest extends TestCase
                     ],
                 ],
                 'sku' => 'FAN-53KBBW01V0011-155/220',
-                'url' => 'https://app.seidenland.test/cashmere-90-duo-bettdecke-extra-warm-frankenstolz?tec_size_bettwaren_config=1113',
+                'url' => 'https://app.default.test/cashmere-90-duo-bettdecke-extra-warm-frankenstolz?tec_size_bettwaren_config=1113',
             ]
         ];
     }
@@ -97,8 +97,8 @@ final class ArrayToXmlConverterTest extends TestCase
 			<g:id><![CDATA[FAN-53KBBW01V0011-155/220]]></g:id>
 			<g:title><![CDATA[Frankenstolz Duo Bettdecke 90% CASHMERE extra warm 40°C waschbar-155/220]]></g:title>
 			<g:description><![CDATA[product-description]]></g:description>
-			<g:link><![CDATA[https://app.seidenland.test/cashmere-90-duo-bettdecke-extra-warm-frankenstolz?tec_size_bettwaren_config=1113]]></g:link>
-			<g:image_link><![CDATA[https://app.seidenland.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/c/a/cashmere-duo-winterdecke-53kbbw01v0009-frankenstolz-2_2.jpg]]></g:image_link>
+			<g:link><![CDATA[https://app.default.test/cashmere-90-duo-bettdecke-extra-warm-frankenstolz?tec_size_bettwaren_config=1113]]></g:link>
+			<g:image_link><![CDATA[https://app.default.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/c/a/cashmere-duo-winterdecke-53kbbw01v0009-frankenstolz-2_2.jpg]]></g:image_link>
 			<g:availability><![CDATA[in_stock]]></g:availability>
             <g:product_type><![CDATA[Duo- Bettdecke]]></g:product_type>
 			<g:price><![CDATA[230,00 EUR]]></g:price>
@@ -133,7 +133,7 @@ final class ArrayToXmlConverterTest extends TestCase
                 <g:country><![CDATA[NO]]></g:country>
                 <g:price><![CDATA[23,68 EUR]]></g:price>
              </g:shipping>
-			<g:additional_image_link><![CDATA[https://app.seidenland.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/o/e/oeko-tex-zertifizierte-schadstoffkontrollierte-bettwaren-frankenstolz_3_2_1_2_2_4_1_1_3_2_2_2_2.jpg]]></g:additional_image_link><g:additional_image_link><![CDATA[https://app.seidenland.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/f/a/fan-bettwaren-made-in-germany_2_2_1_2_2_4_1_1_3_2_2_2_2.jpg]]></g:additional_image_link>
+			<g:additional_image_link><![CDATA[https://app.default.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/o/e/oeko-tex-zertifizierte-schadstoffkontrollierte-bettwaren-frankenstolz_3_2_1_2_2_4_1_1_3_2_2_2_2.jpg]]></g:additional_image_link><g:additional_image_link><![CDATA[https://app.default.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/f/a/fan-bettwaren-made-in-germany_2_2_1_2_2_4_1_1_3_2_2_2_2.jpg]]></g:additional_image_link>
 		</item>
     </channel>
 </rss>

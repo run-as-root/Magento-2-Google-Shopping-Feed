@@ -99,8 +99,8 @@ final class AdditionalImageLinkProviderTest extends TestCase
             ->method('getFile')
             ->willReturn($productImageThree);
 
-        $productImageLinkTwo = 'https://app.seidenland.test/media/catalog/product/o/e/image-two.jpg';
-        $productImageLinkThree = 'https://app.seidenland.test/media/catalog/product/o/e/image-three.jpg';
+        $productImageLinkTwo = 'https://app.default.test/media/catalog/product/o/e/image-two.jpg';
+        $productImageLinkThree = 'https://app.default.test/media/catalog/product/o/e/image-three.jpg';
 
         $this->productImageUrlProviderMock
             ->expects($this->exactly(2))
