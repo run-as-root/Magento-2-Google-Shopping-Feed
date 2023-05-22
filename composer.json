@@ -1,5 +1,5 @@
 {
-    "name": "run_as_root/ext-magento2-google-shopping-feed",
+    "name": "jreinke/magento2-google-shopping-feed",
     "version": "1.0.0",
     "description": "This module provides a google shopping product feed csv export.",
     "type": "magento2-module",
