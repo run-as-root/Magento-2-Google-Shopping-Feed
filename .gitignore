@@ -1,0 +1,13 @@
+/vendor/
+/composer.lock
+/.buildpath
+/.project
+/nbproject
+/catalog.xml
+/sitemap.xml
+/.settings
+/.idea
+.DS_Store
+.~*
+*.sublime-*
+atlassian-ide-plugin.xml

@@ -66,6 +66,8 @@ XML;
             {$this->getOptionalProductAttr($row, 'material')}
             {$this->getOptionalProductAttr($row, 'size')}
             {$this->getOptionalProductAttr($row, 'pattern')}
+            {$this->getOptionalProductAttr($row, 'google_product_category')}
+            {$this->getOptionalProductAttr($row, 'age_group')}
             {$this->getProductDetail($row['product_detail'])}
 			{$this->getShipping($row['shipping'])}
 			{$this->getAdditionalImageLinks($row['additional_image_link'])}

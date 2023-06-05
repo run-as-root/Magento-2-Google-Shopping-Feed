@@ -44,6 +44,18 @@
             <argument name="attributeCode" xsi:type="string">material</argument>
         </arguments>
     </virtualType>
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\GoogleProductCategoryProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler">
+        <arguments>
+            <argument name="attributeCode" xsi:type="string">google_product_category</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AgeGroupProvider"
+                 type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SelectAttributeHandler">
+        <arguments>
+            <argument name="attributeCode" xsi:type="string">age_group</argument>
+        </arguments>
+    </virtualType>
     <!-- Simple Attributes -->
     <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\EanProvider"
                  type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler">

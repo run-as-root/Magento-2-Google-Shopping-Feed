@@ -29,5 +29,10 @@
         "psr-4": {
             "RunAsRoot\\GoogleShoppingFeed\\": ""
         }
+    },
+    "config": {
+        "allow-plugins": {
+            "magento/composer-dependency-version-audit-plugin": true
+        }
     }
 }
