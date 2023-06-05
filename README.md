@@ -13,7 +13,7 @@ bin/magento setup:upgrade
 ### Feed generation
 
 Generate product feed every 2 hours with minimal required attributes, for each storeview.  
-Places file into `pub/run_as_root/feed/%s_store_%s_feed.csv`.
+Places file into `pub/media/run_as_root/feed/%s_store_%s_feed.csv`.
 
 ## Technical Specification
 
