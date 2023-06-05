@@ -6,11 +6,13 @@ namespace RunAsRoot\GoogleShoppingFeed\Enum;
 
 use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigData;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AdditionalImageLinkProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AgeGroupProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\CategoryUrlProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ColorProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\DescriptionProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\EanProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\GenderProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\GoogleProductCategoryProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ImageLinkProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\IsInStockProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ItemGroupIdProvider;
@@ -72,6 +74,14 @@ interface AttributesToImportEnumInterface
         'material' => [
             AttributeConfigData::FIELD_NAME => 'material',
             AttributeConfigData::ATTRIBUTE_HANDLER => MaterialProvider::class,
+        ],
+        'google_product_category' => [
+            AttributeConfigData::FIELD_NAME => 'google_product_category',
+            AttributeConfigData::ATTRIBUTE_HANDLER => GoogleProductCategoryProvider::class,
+        ],
+        'age_group' => [
+            AttributeConfigData::FIELD_NAME => 'age_group',
+            AttributeConfigData::ATTRIBUTE_HANDLER => AgeGroupProvider::class,
         ],
         'size' => [
             AttributeConfigData::FIELD_NAME => 'size',
