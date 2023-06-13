@@ -1,3 +1,5 @@
+![build](https://github.com/run-as-root/Magento-2-Google-Shopping-Feed/actions/workflows/test_extension.yml/badge.svg)
+
 ## General
 
 Generate feed with product data.

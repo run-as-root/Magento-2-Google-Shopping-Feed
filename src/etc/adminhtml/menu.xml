@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="RunAsRoot_GoogleShoppingFeed::run_as_root"
+             title="run_as_root"
+             module="RunAsRoot_GoogleShoppingFeed"
+             sortOrder="100"
+             parent="Magento_Backend::marketing"
+             resource="RunAsRoot_GoogleShoppingFeed::run_as_root"
+        />
+        <add id="RunAsRoot_GoogleShoppingFeed::google_shopping_feed"
+             title="Google Shopping Feed"
+             module="RunAsRoot_GoogleShoppingFeed"
+             sortOrder="120" action="run_as_root/google/feeds"
+             resource="RunAsRoot_GoogleShoppingFeed::google_shopping_feed"
+             parent="RunAsRoot_GoogleShoppingFeed::run_as_root"
+        />
+    </menu>
+</config>
+
