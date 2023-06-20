@@ -44,7 +44,7 @@ class FileReader
 
         try {
             $dir = $this->filesystemIteratorFactory->create([
-                'path' => DirectoryList::MEDIA . DIRECTORY_SEPARATOR . $this->destination,
+                'directory' => DirectoryList::MEDIA . DIRECTORY_SEPARATOR . $this->destination,
                 'flags' => FilesystemIterator::SKIP_DOTS,
             ]);
         } catch (\UnexpectedValueException $exception) {
