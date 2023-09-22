@@ -7,6 +7,7 @@ namespace RunAsRoot\GoogleShoppingFeed\Service;
 use Magento\Bundle\Model\Product\Type as BundleProduct;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Exception\FileSystemException;
@@ -17,6 +18,7 @@ use Magento\Store\Api\Data\StoreInterface;
 use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ProductsCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
 use RunAsRoot\GoogleShoppingFeed\Converter\ArrayToXmlConverter;
+use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributesConfigListProvider;
 use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
@@ -100,7 +102,6 @@ class GenerateFeedForStore
                 $storeId
             );
 
-
             /** @var Product[] $items */
             $items = $collection->getItems();
 
@@ -113,30 +114,11 @@ class GenerateFeedForStore
 
                 // CONFIGURABLE AND GROUPED PRODUCTS FLOW
                 if ($typeInstance instanceof Configurable || $typeInstance instanceof Grouped) {
-                    $childProducts = $typeInstance instanceof Grouped ?
-                        $typeInstance->getAssociatedProducts($product) : $typeInstance->getUsedProducts($product);
+                    $confAndGroupedRows =
+                        $this->getConfigurableAndGroupedRows($typeInstance, $product, $attributesConfigList);
 
-                    foreach ($childProducts as $childProduct) {
-                        if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
-                            continue;
-                        }
-
-                        try {
-                            $childProduct = $this->productRepository
-                                ->get($childProduct->getSku(), false, $childProduct->getStoreId());
-                            $rows[$childProduct->getId()] = $this->productToRowMapper
-                                ->map($childProduct, $attributesConfigList);
-                        } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
-                            throw new GenerateFeedForStoreException(
-                                __(
-                                    'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
-                                    $product->getId(),
-                                    $exception->getMessage()
-                                ),
-                                $exception
-                            );
-                        }
-                    }
+                    // @phpcs:ignore
+                    $rows = array_merge($rows, $confAndGroupedRows);
 
                     $currentPage++;
                     continue;
@@ -144,32 +126,9 @@ class GenerateFeedForStore
 
                 // BUNDLE PRODUCTS FLOW
                 if ($typeInstance instanceof BundleProduct) {
-                    $childProductIds = $typeInstance->getChildrenIds($product->getId());
-
-                    foreach ($childProductIds as $productIds) {
-                        foreach ($productIds as $childProductId) {
-                            try {
-                                $childProduct = $this->productRepository
-                                    ->getById($childProductId, false, $product->getStoreId());
-
-                                if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
-                                    continue;
-                                }
-
-                                $rows[$childProduct->getId()] = $this->productToRowMapper
-                                    ->map($childProduct, $attributesConfigList);
-                            } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
-                                throw new GenerateFeedForStoreException(
-                                    __(
-                                        'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
-                                        $product->getId(),
-                                        $exception->getMessage()
-                                    ),
-                                    $exception
-                                );
-                            }
-                        }
-                    }
+                    $bundleRows = $this->getBundleProductRows($typeInstance, $product, $attributesConfigList);
+                    // @phpcs:ignore
+                    $rows = array_merge($rows, $bundleRows);
 
                     $currentPage++;
                     continue;
@@ -200,5 +159,84 @@ class GenerateFeedForStore
     {
         $pageSize = $productCollection->getPageSize();
         return $pageSize * $currentPage < $productCollection->getSize() + $pageSize;
+    }
+
+    /**
+     * @throws GenerateFeedForStoreException
+     * @throws NoSuchEntityException
+     */
+    private function getConfigurableAndGroupedRows(
+        AbstractType $typeInstance,
+        Product $product,
+        AttributeConfigDataList $attributesConfigList
+    ): array {
+        $rows = [];
+
+        $childProducts = $typeInstance instanceof Grouped ?
+            $typeInstance->getAssociatedProducts($product) : $typeInstance->getUsedProducts($product);
+
+        foreach ($childProducts as $childProduct) {
+            if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
+                continue;
+            }
+
+            try {
+                $childProduct = $this->productRepository
+                    ->get($childProduct->getSku(), false, $childProduct->getStoreId());
+                $rows[$childProduct->getId()] = $this->productToRowMapper
+                    ->map($childProduct, $attributesConfigList);
+            } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
+                throw new GenerateFeedForStoreException(
+                    __(
+                        'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
+                        $product->getId(),
+                        $exception->getMessage()
+                    ),
+                    $exception
+                );
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @throws GenerateFeedForStoreException
+     * @throws NoSuchEntityException
+     */
+    private function getBundleProductRows(
+        BundleProduct $typeInstance,
+        Product $product,
+        AttributeConfigDataList $attributesConfigList
+    ): array {
+        $rows = [];
+        $childProductIds = $typeInstance->getChildrenIds($product->getId());
+
+        foreach ($childProductIds as $productIds) {
+            foreach ($productIds as $childProductId) {
+                try {
+                    $childProduct = $this->productRepository
+                        ->getById($childProductId, false, $product->getStoreId());
+
+                    if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
+                        continue;
+                    }
+
+                    $rows[$childProduct->getId()] = $this->productToRowMapper
+                        ->map($childProduct, $attributesConfigList);
+                } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
+                    throw new GenerateFeedForStoreException(
+                        __(
+                            'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
+                            $product->getId(),
+                            $exception->getMessage()
+                        ),
+                        $exception
+                    );
+                }
+            }
+        }
+
+        return $rows;
     }
 }
