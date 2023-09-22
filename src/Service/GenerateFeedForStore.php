@@ -7,6 +7,7 @@ namespace RunAsRoot\GoogleShoppingFeed\Service;
 use Magento\Bundle\Model\Product\Type as BundleProduct;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Type\AbstractType;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Exception\FileSystemException;
@@ -115,6 +116,8 @@ class GenerateFeedForStore
                 if ($typeInstance instanceof Configurable || $typeInstance instanceof Grouped) {
                     $confAndGroupedRows =
                         $this->getConfigurableAndGroupedRows($typeInstance, $product, $attributesConfigList);
+
+                    // @phpcs:ignore
                     $rows = array_merge($rows, $confAndGroupedRows);
 
                     $currentPage++;
@@ -124,6 +127,7 @@ class GenerateFeedForStore
                 // BUNDLE PRODUCTS FLOW
                 if ($typeInstance instanceof BundleProduct) {
                     $bundleRows = $this->getBundleProductRows($typeInstance, $product, $attributesConfigList);
+                    // @phpcs:ignore
                     $rows = array_merge($rows, $bundleRows);
 
                     $currentPage++;
@@ -161,12 +165,11 @@ class GenerateFeedForStore
      * @throws GenerateFeedForStoreException
      * @throws NoSuchEntityException
      */
-    public function getConfigurableAndGroupedRows(
-        Grouped|Configurable $typeInstance,
+    private function getConfigurableAndGroupedRows(
+        AbstractType $typeInstance,
         Product $product,
         AttributeConfigDataList $attributesConfigList
-    ): array
-    {
+    ): array {
         $rows = [];
 
         $childProducts = $typeInstance instanceof Grouped ?
@@ -182,7 +185,7 @@ class GenerateFeedForStore
                     ->get($childProduct->getSku(), false, $childProduct->getStoreId());
                 $rows[$childProduct->getId()] = $this->productToRowMapper
                     ->map($childProduct, $attributesConfigList);
-            } catch (HandlerIsNotSpecifiedException|WrongInstanceException $exception) {
+            } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
                 throw new GenerateFeedForStoreException(
                     __(
                         'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
@@ -201,12 +204,11 @@ class GenerateFeedForStore
      * @throws GenerateFeedForStoreException
      * @throws NoSuchEntityException
      */
-    public function getBundleProductRows(
+    private function getBundleProductRows(
         BundleProduct $typeInstance,
         Product $product,
         AttributeConfigDataList $attributesConfigList
-    ): array
-    {
+    ): array {
         $rows = [];
         $childProductIds = $typeInstance->getChildrenIds($product->getId());
 
@@ -222,7 +224,7 @@ class GenerateFeedForStore
 
                     $rows[$childProduct->getId()] = $this->productToRowMapper
                         ->map($childProduct, $attributesConfigList);
-                } catch (HandlerIsNotSpecifiedException|WrongInstanceException $exception) {
+                } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
                     throw new GenerateFeedForStoreException(
                         __(
                             'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
