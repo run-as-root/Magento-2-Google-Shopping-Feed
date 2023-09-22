@@ -14,7 +14,8 @@
         "magento/module-catalog": "*",
         "magento/module-review": "*",
         "magento/module-eav": "*",
-        "magento/module-directory": "*"
+        "magento/module-directory": "*",
+        "magento/module-grouped-product": "^100.4"
     },
     "require-dev": {
         "phpunit/phpunit": "~9.5.20",
