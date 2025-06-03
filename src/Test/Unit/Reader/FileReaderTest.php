@@ -33,7 +33,7 @@ final class FileReaderTest extends TestCase
         $this->dirMock = $this->createMock(\FilesystemIterator::class);
 
         $this->dirFactoryMock->method('create')->with([
-            'path' => DirectoryList::MEDIA . DIRECTORY_SEPARATOR . self::DESTINATION,
+            'directory' => DirectoryList::MEDIA . DIRECTORY_SEPARATOR . self::DESTINATION,
             'flags' => \FilesystemIterator::SKIP_DOTS
         ])->willReturn($this->dirMock);
 
@@ -44,7 +44,7 @@ final class FileReaderTest extends TestCase
     public function testDirDoesntExists(): void
     {
         $this->dirFactoryMock->method('create')->with([
-            'path' => DirectoryList::MEDIA . DIRECTORY_SEPARATOR . self::DESTINATION,
+            'directory' => DirectoryList::MEDIA . DIRECTORY_SEPARATOR . self::DESTINATION,
             'flags' => \FilesystemIterator::SKIP_DOTS
         ])->willThrowException(new \UnexpectedValueException);
 
