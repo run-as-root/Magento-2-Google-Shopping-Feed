@@ -98,8 +98,8 @@
     <rule ref="SlevomatCodingStandard.TypeHints.UselessConstantTypeHint"/>
     <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
         <properties>
-            <property name="linesCountBeforeDeclare" value="2"/>
-            <property name="linesCountAfterDeclare" value="2"/>
+            <property name="linesCountBeforeDeclare" value="1"/>
+            <property name="linesCountAfterDeclare" value="1"/>
             <property name="spacesCountAroundEqualsSign" value="0"/>
         </properties>
         <exclude-pattern>*.xml</exclude-pattern>
