@@ -98,8 +98,8 @@
     <rule ref="SlevomatCodingStandard.TypeHints.UselessConstantTypeHint"/>
     <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
         <properties>
-            <property name="newlinesCountBetweenOpenTagAndDeclare" value="2"/>
-            <property name="newlinesCountAfterDeclare" value="2"/>
+            <property name="declareOnFirstLine" value="true"/>
+            <property name="linesCountAfterDeclare" value="2"/>
             <property name="spacesCountAroundEqualsSign" value="0"/>
         </properties>
         <exclude-pattern>*.xml</exclude-pattern>
@@ -133,10 +133,10 @@
     <rule ref="SlevomatCodingStandard.ControlStructures.DisallowYodaComparison"/>
     <rule ref="SlevomatCodingStandard.ControlStructures.BlockControlStructureSpacing">
         <properties>
-            <property name="linesCountBeforeControlStructure" value="1"/>
-            <property name="linesCountBeforeFirstControlStructure" value="0"/>
-            <property name="linesCountAfterControlStructure" value="1"/>
-            <property name="linesCountAfterLastControlStructure" value="0"/>
+            <property name="linesCountBefore" value="1"/>
+            <property name="linesCountBeforeFirst" value="0"/>
+            <property name="linesCountAfter" value="1"/>
+            <property name="linesCountAfterLast" value="0"/>
         </properties>
     </rule>
 </ruleset>
