@@ -157,7 +157,7 @@ class GenerateFeedForStore
     private function getSimpleProductRows(Product $product, AttributeConfigDataList $attributesConfigList): array
     {
         try {
-            return [$product->getId() => $this->productToRowMapper->map($product, $attributesConfigList)];
+            return [ $product->getId() => $this->productToRowMapper->map($product, $attributesConfigList) ];
         } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
             throw new GenerateFeedForStoreException(
                 __(
@@ -289,7 +289,7 @@ class GenerateFeedForStore
         }
 
         try {
-            return [$product->getId() => $this->productToRowMapper->map($product, $attributesConfigList)];
+            return [ $product->getId() => $this->productToRowMapper->map($product, $attributesConfigList) ];
         } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
             throw new GenerateFeedForStoreException(
                 __(
