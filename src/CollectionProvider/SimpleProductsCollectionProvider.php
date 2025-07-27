@@ -20,13 +20,16 @@ class SimpleProductsCollectionProvider
         $this->productCollectionFactory = $productCollectionFactory;
     }
 
-    public function get(int $page, array $categories, int $storeId = null): ProductCollection
+    /**
+     * @param array<int> $categories
+     */
+    public function get(int $page, array $categories, ?int $storeId = null): ProductCollection
     {
         $collection = $this->productCollectionFactory->create();
 
         $collection->addAttributeToSelect('*')
-            ->addAttributeToFilter('type_id', 'simple')
-            ->addAttributeToFilter('status', self::STATUS_ENABLED)
+            ->addAttributeToFilter('type_id', ['eq' => 'simple'])
+            ->addAttributeToFilter('status', ['eq' => self::STATUS_ENABLED])
             ->addCategoriesFilter([ 'in' => $categories ])
             ->addMediaGalleryData()
             ->addStoreFilter($storeId)

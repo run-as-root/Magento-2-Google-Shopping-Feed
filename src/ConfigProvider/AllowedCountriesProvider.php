@@ -8,7 +8,6 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\ScopeInterface;
 
 use function explode;
-use function is_array;
 
 class AllowedCountriesProvider
 {
@@ -21,6 +20,9 @@ class AllowedCountriesProvider
         $this->scopeConfig = $scopeConfig;
     }
 
+    /**
+     * @return string[]
+     */
     public function get(int $storeId): array
     {
         $configValue = $this->scopeConfig->getValue(self::CONFIG_PATH, ScopeInterface::SCOPE_STORE, $storeId);
@@ -29,12 +31,6 @@ class AllowedCountriesProvider
             return [];
         }
 
-        $countryCodes = explode(',', $configValue);
-
-        if (!is_array($countryCodes)) {
-            return [];
-        }
-
-        return $countryCodes;
+        return explode(',', $configValue);
     }
 }

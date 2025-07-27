@@ -29,6 +29,9 @@ class FeedConfigProvider
         return $this->config->isSetFlag(self::CONFIG_PATH_FEED_IS_ENABLED, ScopeInterface::SCOPE_STORE, $storeId);
     }
 
+    /**
+     * @return array<string>
+     */
     public function getCategoryWhitelist(int $storeId): array
     {
         $categoriesWhitelistString = $this->config->getValue(
@@ -40,6 +43,9 @@ class FeedConfigProvider
         return $categoriesWhitelistString !== null ? explode(',', $categoriesWhitelistString) : [];
     }
 
+    /**
+     * @return array<string>
+     */
     public function getCategoryBlacklist(int $storeId): array
     {
         $categoriesBlacklistString = $this->config->getValue(

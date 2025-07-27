@@ -39,8 +39,8 @@ final class SimpleProductsCollectionProviderTest extends TestCase
             ->method('addAttributeToFilter')
             ->willReturnCallback(function ($attribute, $value) use ($collection, $invokedCount) {
                 match ($invokedCount->numberOfInvocations()) {
-                    1 => $this->assertEquals(['type_id', 'simple'], [$attribute, $value]),
-                    2 => $this->assertEquals(['status', 1], [$attribute, $value]),
+                    1 => $this->assertEquals(['type_id', ['eq' => 'simple']], [$attribute, $value]),
+                    2 => $this->assertEquals(['status', ['eq' => 1]], [$attribute, $value]),
                 };
                 return $collection;
             });

@@ -23,6 +23,7 @@ class FeedRepository implements \RunAsRoot\GoogleShoppingFeed\Api\FeedRepository
 
     /**
      * @inheritDoc
+     * @return \RunAsRoot\GoogleShoppingFeed\Api\Data\FeedInterface[]
      * @throws NoSuchEntityException
      * @throws LocalizedException
      */
@@ -36,6 +37,7 @@ class FeedRepository implements \RunAsRoot\GoogleShoppingFeed\Api\FeedRepository
             throw new LocalizedException(__($e->getMessage()));
         }
 
+        /** @var \RunAsRoot\GoogleShoppingFeed\Api\Data\FeedInterface[] $feeds */
         $feeds = [];
 
         foreach ($files as $file) {
@@ -48,7 +50,7 @@ class FeedRepository implements \RunAsRoot\GoogleShoppingFeed\Api\FeedRepository
             $feed->setLastGenerated($file['fileGenerationTime']);
             $feed->setStore($file['store']);
 
-            $feeds[] = $feed->toArray();
+            $feeds[] = $feed;
         }
 
         return $feeds;

@@ -81,14 +81,11 @@ class FeedRepositoryTest extends TestCase
         $feedMock->method('setLastGenerated')->with($file['fileGenerationTime'])->willReturn($feedMock);
         $feedMock->method('setStore')->with($file['store'])->willReturn($feedMock);
 
-        $feedMock->method('toArray')->willReturn([
-            'filename' => $file['fileName'],
-            'path' => $file['path'],
-            'link' => $file['link'],
-            'last_generated' => $file['fileGenerationTime'],
-            'store' => $file['store']
-        ]);
+        $feedMock->method('getLink')->willReturn($file['link']);
 
-        $this->assertArrayHasKey('link', $this->sut->getList()[0]);
+        $result = $this->sut->getList();
+        $this->assertCount(1, $result);
+        $this->assertInstanceOf(Feed::class, $result[0]);
+        $this->assertEquals($file['link'], $result[0]->getLink());
     }
 }
