@@ -49,16 +49,18 @@ final class ProductToFeedAttributesRowMapperTest extends TestCase
         $attributeDataProviderOne = $this->createMock(AttributeHandlerInterface::class);
         $attributeDataProviderTwo = $this->createMock(AttributeHandlerInterface::class);
 
+        $handlerProviderInvokedCount = $this->exactly(2);
         $this->attributeHandlerProviderMock
-            ->expects($this->exactly(2))
+            ->expects($handlerProviderInvokedCount)
             ->method('get')
-            ->withConsecutive(
-                [$attributeConfigDataOne],
-                [$attributeConfigDataTwo]
-            )->willReturnOnConsecutiveCalls(
-                $attributeDataProviderOne,
-                $attributeDataProviderTwo
-            );
+            ->willReturnCallback(function ($attributeConfigData) use ($attributeConfigDataOne, $attributeConfigDataTwo, $attributeDataProviderOne, $attributeDataProviderTwo, $handlerProviderInvokedCount) {
+                return match ($handlerProviderInvokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals($attributeConfigDataOne, $attributeConfigData) 
+                         ?: $attributeDataProviderOne,
+                    2 => $this->assertEquals($attributeConfigDataTwo, $attributeConfigData) 
+                         ?: $attributeDataProviderTwo,
+                };
+            });
 
         $attributeDataProviderOne->expects($this->once())
             ->method('get')
