@@ -1,0 +1,192 @@
+<?php
+
+declare(strict_types=1);
+
+namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\Service;
+
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Api\Data\WebsiteInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+use RunAsRoot\GoogleShoppingFeed\Service\InventorySalableResult;
+use RunAsRoot\GoogleShoppingFeed\Service\MsiInventoryAdapter;
+
+class MsiInventoryAdapterTest extends TestCase
+{
+    /** @var MockObject */
+    private $getAssignedStockIdForWebsiteMock;
+
+    /** @var MockObject */
+    private $areProductsSalableMock;
+
+    /** @var StoreManagerInterface|MockObject */
+    private $storeManagerMock;
+
+    private MsiInventoryAdapter $msiInventoryAdapter;
+
+    protected function setUp(): void
+    {
+        $this->getAssignedStockIdForWebsiteMock = $this->createMock(
+            'Magento\InventorySales\Model\ResourceModel\GetAssignedStockIdForWebsite'
+        );
+        $this->areProductsSalableMock = $this->createMock(
+            'Magento\InventorySales\Model\AreProductsSalable'
+        );
+        $this->storeManagerMock = $this->createMock(StoreManagerInterface::class);
+
+        $this->msiInventoryAdapter = new MsiInventoryAdapter(
+            $this->getAssignedStockIdForWebsiteMock,
+            $this->areProductsSalableMock,
+            $this->storeManagerMock
+        );
+    }
+
+    public function testGetAssignedStockIdForStoreReturnsStockId(): void
+    {
+        $storeId = 1;
+        $websiteId = 1;
+        $websiteCode = 'base';
+        $expectedStockId = 2;
+
+        $storeMock = $this->createMock(StoreInterface::class);
+        $websiteMock = $this->createMock(WebsiteInterface::class);
+
+        $this->storeManagerMock
+            ->expects($this->once())
+            ->method('getStore')
+            ->with($storeId)
+            ->willReturn($storeMock);
+
+        $storeMock
+            ->expects($this->once())
+            ->method('getWebsiteId')
+            ->willReturn($websiteId);
+
+        $this->storeManagerMock
+            ->expects($this->once())
+            ->method('getWebsite')
+            ->with($websiteId)
+            ->willReturn($websiteMock);
+
+        $websiteMock
+            ->expects($this->once())
+            ->method('getCode')
+            ->willReturn($websiteCode);
+
+        $this->getAssignedStockIdForWebsiteMock
+            ->expects($this->once())
+            ->method('execute')
+            ->with($websiteCode)
+            ->willReturn($expectedStockId);
+
+        $result = $this->msiInventoryAdapter->getAssignedStockIdForStore($storeId);
+
+        $this->assertEquals($expectedStockId, $result);
+    }
+
+    public function testGetAssignedStockIdForStoreUsesCaching(): void
+    {
+        $storeId = 1;
+        $websiteId = 1;
+        $websiteCode = 'base';
+        $expectedStockId = 2;
+
+        $storeMock = $this->createMock(StoreInterface::class);
+        $websiteMock = $this->createMock(WebsiteInterface::class);
+
+        // First call should hit the service
+        $this->storeManagerMock
+            ->expects($this->once())
+            ->method('getStore')
+            ->with($storeId)
+            ->willReturn($storeMock);
+
+        $storeMock
+            ->expects($this->once())
+            ->method('getWebsiteId')
+            ->willReturn($websiteId);
+
+        $this->storeManagerMock
+            ->expects($this->once())
+            ->method('getWebsite')
+            ->with($websiteId)
+            ->willReturn($websiteMock);
+
+        $websiteMock
+            ->expects($this->once())
+            ->method('getCode')
+            ->willReturn($websiteCode);
+
+        $this->getAssignedStockIdForWebsiteMock
+            ->expects($this->once()) // Should only be called once due to caching
+            ->method('execute')
+            ->with($websiteCode)
+            ->willReturn($expectedStockId);
+
+        // First call
+        $result1 = $this->msiInventoryAdapter->getAssignedStockIdForStore($storeId);
+        // Second call should use cache
+        $result2 = $this->msiInventoryAdapter->getAssignedStockIdForStore($storeId);
+
+        $this->assertEquals($expectedStockId, $result1);
+        $this->assertEquals($expectedStockId, $result2);
+    }
+
+    public function testAreProductsSalableReturnsCorrectResults(): void
+    {
+        $skus = ['SKU1', 'SKU2'];
+        $stockId = 1;
+
+        $msiResult1Mock = $this->createMock(
+            'Magento\InventorySalesApi\Api\Data\IsProductSalableResultInterface'
+        );
+        $msiResult2Mock = $this->createMock(
+            'Magento\InventorySalesApi\Api\Data\IsProductSalableResultInterface'
+        );
+
+        $msiResult1Mock->method('getSku')->willReturn('SKU1');
+        $msiResult1Mock->method('isSalable')->willReturn(true);
+        $msiResult1Mock->method('getErrors')->willReturn([]);
+
+        $msiResult2Mock->method('getSku')->willReturn('SKU2');
+        $msiResult2Mock->method('isSalable')->willReturn(false);
+        $msiResult2Mock->method('getErrors')->willReturn(['Out of stock']);
+
+        $this->areProductsSalableMock
+            ->expects($this->once())
+            ->method('execute')
+            ->with($skus, $stockId)
+            ->willReturn([$msiResult1Mock, $msiResult2Mock]);
+
+        $results = $this->msiInventoryAdapter->areProductsSalable($skus, $stockId);
+
+        $this->assertCount(2, $results);
+        $this->assertInstanceOf(InventorySalableResult::class, $results[0]);
+        $this->assertInstanceOf(InventorySalableResult::class, $results[1]);
+
+        $this->assertEquals('SKU1', $results[0]->getSku());
+        $this->assertTrue($results[0]->isSalable());
+        $this->assertEmpty($results[0]->getErrors());
+
+        $this->assertEquals('SKU2', $results[1]->getSku());
+        $this->assertFalse($results[1]->isSalable());
+        $this->assertEquals(['Out of stock'], $results[1]->getErrors());
+    }
+
+    public function testGetAssignedStockIdForStoreThrowsExceptionOnError(): void
+    {
+        $storeId = 1;
+
+        $this->storeManagerMock
+            ->expects($this->once())
+            ->method('getStore')
+            ->with($storeId)
+            ->willThrowException(new LocalizedException(__('Store not found')));
+
+        $this->expectException(LocalizedException::class);
+
+        $this->msiInventoryAdapter->getAssignedStockIdForStore($storeId);
+    }
+}

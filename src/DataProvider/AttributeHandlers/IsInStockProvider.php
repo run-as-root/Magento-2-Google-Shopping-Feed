@@ -6,22 +6,23 @@ namespace RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\LocalizedException;
-use Magento\InventorySales\Model\AreProductsSalable;
-use Magento\InventorySalesApi\Api\Data\IsProductSalableResultInterface;
 use RunAsRoot\GoogleShoppingFeed\Enum\GoogleShoppingAviabilityEnumInterface;
 use RunAsRoot\GoogleShoppingFeed\Service\GetAssignedStockIdForStore;
+use RunAsRoot\GoogleShoppingFeed\Service\InventoryAdapterFactory;
+use RunAsRoot\GoogleShoppingFeed\Service\InventoryAdapterInterface;
 
 class IsInStockProvider implements AttributeHandlerInterface
 {
     private GetAssignedStockIdForStore $getAssignedStockIdForStore;
-    private AreProductsSalable $areProductsSalable;
+    private InventoryAdapterFactory $inventoryAdapterFactory;
+    private ?InventoryAdapterInterface $inventoryAdapter = null;
 
     public function __construct(
         GetAssignedStockIdForStore $getAssignedStockIdForStore,
-        AreProductsSalable $areProductsSalable
+        InventoryAdapterFactory $inventoryAdapterFactory
     ) {
         $this->getAssignedStockIdForStore = $getAssignedStockIdForStore;
-        $this->areProductsSalable = $areProductsSalable;
+        $this->inventoryAdapterFactory = $inventoryAdapterFactory;
     }
 
     public function get(Product $product): string
@@ -38,15 +39,31 @@ class IsInStockProvider implements AttributeHandlerInterface
             return GoogleShoppingAviabilityEnumInterface::OUT_OF_STOCK;
         }
 
-        /** @var IsProductSalableResultInterface[] $allSalableInformation */
-        $allSalableInformation = $this->areProductsSalable->execute([ $product->getSku() ], $stockId);
+        try {
+            $inventoryAdapter = $this->getInventoryAdapter();
+            $salableResults = $inventoryAdapter->areProductsSalable([$product->getSku()], $stockId);
 
-        $salableInformation = reset($allSalableInformation);
+            $salableResult = reset($salableResults);
 
-        if ($salableInformation && $salableInformation->isSalable() === true) {
-            return GoogleShoppingAviabilityEnumInterface::IN_STOCK;
+            if ($salableResult && $salableResult->isSalable() === true) {
+                return GoogleShoppingAviabilityEnumInterface::IN_STOCK;
+            }
+        } catch (LocalizedException $exception) {
+            return GoogleShoppingAviabilityEnumInterface::OUT_OF_STOCK;
         }
 
         return GoogleShoppingAviabilityEnumInterface::OUT_OF_STOCK;
+    }
+
+    /**
+     * @throws LocalizedException
+     */
+    private function getInventoryAdapter(): InventoryAdapterInterface
+    {
+        if ($this->inventoryAdapter === null) {
+            $this->inventoryAdapter = $this->inventoryAdapterFactory->create();
+        }
+
+        return $this->inventoryAdapter;
     }
 }

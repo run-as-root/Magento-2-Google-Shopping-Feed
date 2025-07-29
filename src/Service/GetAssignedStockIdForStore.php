@@ -5,21 +5,18 @@ declare(strict_types=1);
 namespace RunAsRoot\GoogleShoppingFeed\Service;
 
 use Magento\Framework\Exception\LocalizedException;
-use Magento\InventorySales\Model\ResourceModel\GetAssignedStockIdForWebsite;
-use Magento\Store\Model\StoreManagerInterface;
 
 class GetAssignedStockIdForStore
 {
+    /** @var array<int, ?int> */
     private array $cache = [];
-    private GetAssignedStockIdForWebsite $getAssignedStockIdForWebsite;
-    private StoreManagerInterface $storeManager;
+    private InventoryAdapterFactory $inventoryAdapterFactory;
+    private ?InventoryAdapterInterface $inventoryAdapter = null;
 
     public function __construct(
-        GetAssignedStockIdForWebsite $getAssignedStockIdForWebsite,
-        StoreManagerInterface $storeManager
+        InventoryAdapterFactory $inventoryAdapterFactory
     ) {
-        $this->getAssignedStockIdForWebsite = $getAssignedStockIdForWebsite;
-        $this->storeManager = $storeManager;
+        $this->inventoryAdapterFactory = $inventoryAdapterFactory;
     }
 
     /**
@@ -31,13 +28,22 @@ class GetAssignedStockIdForStore
             return $this->cache[$storeId];
         }
 
-        $store = $this->storeManager->getStore($storeId);
-        $website = $this->storeManager->getWebsite($store->getWebsiteId());
-        $websiteCode = $website->getCode();
+        $inventoryAdapter = $this->getInventoryAdapter();
+        $stockId = $inventoryAdapter->getAssignedStockIdForStore($storeId);
+        $this->cache[$storeId] = $stockId;
 
-        $res = $this->getAssignedStockIdForWebsite->execute($websiteCode);
-        $this->cache[$storeId] = $res;
+        return $stockId;
+    }
 
-        return $res;
+    /**
+     * @throws LocalizedException
+     */
+    private function getInventoryAdapter(): InventoryAdapterInterface
+    {
+        if ($this->inventoryAdapter === null) {
+            $this->inventoryAdapter = $this->inventoryAdapterFactory->create();
+        }
+
+        return $this->inventoryAdapter;
     }
 }
