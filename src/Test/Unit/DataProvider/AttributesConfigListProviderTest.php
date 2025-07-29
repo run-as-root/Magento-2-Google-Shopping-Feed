@@ -34,10 +34,15 @@ final class AttributesConfigListProviderTest extends TestCase
         array $attributeDataConsecutive,
         array $attributeReturn
     ): void {
-        $this->attributeDataFactoryMock->expects($this->exactly(count($feedColumns)))
+        $invokedCount = $this->exactly(count($feedColumns));
+        $this->attributeDataFactoryMock->expects($invokedCount)
             ->method('create')
-            ->withConsecutive(...$attributeDataConsecutive)
-            ->willReturnOnConsecutiveCalls(...$attributeReturn);
+            ->willReturnCallback(function ($data) use ($attributeDataConsecutive, $attributeReturn, $invokedCount) {
+                $invocationIndex = $invokedCount->numberOfInvocations() - 1;
+                $expectedData = $attributeDataConsecutive[$invocationIndex][0];
+                $this->assertEquals($expectedData, $data);
+                return $attributeReturn[$invocationIndex];
+            });
 
         $result = $this->sut->get();
 

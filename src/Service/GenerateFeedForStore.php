@@ -7,7 +7,7 @@ namespace RunAsRoot\GoogleShoppingFeed\Service;
 use Magento\Bundle\Model\Product\Type as BundleProduct;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\Product\Type\AbstractType;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Exception\FileSystemException;
@@ -25,11 +25,12 @@ use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
 use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
 use RunAsRoot\GoogleShoppingFeed\Exception\WrongInstanceException;
 use RunAsRoot\GoogleShoppingFeed\Mapper\ProductToFeedAttributesRowMapper;
+use RunAsRoot\GoogleShoppingFeed\SourceModel\ConfigurableExportType;
 use RunAsRoot\GoogleShoppingFeed\Writer\XmlFileWriterProvider;
 
 class GenerateFeedForStore
 {
-    private const STATUS_ENABLED = 1;
+    private const STATUS_ENABLED = Status::STATUS_ENABLED;
 
     private FeedConfigProvider $configProvider;
     private AttributesConfigListProvider $attributesConfigListProvider;
@@ -93,6 +94,7 @@ class GenerateFeedForStore
         $whitelistedCategories = $this->allowedCategoryIdsProvider->get($storeId);
         $currentPage = 1;
 
+        /** @var array<int, array<string, mixed>> $rows */
         $rows = [];
 
         do {
@@ -102,51 +104,18 @@ class GenerateFeedForStore
                 $storeId
             );
 
-            /** @var Product[] $items */
             $items = $collection->getItems();
 
             foreach ($items as $product) {
+                /** @var Product $product */
                 if (isset($rows[$product->getId()])) {
                     continue;
                 }
 
-                $typeInstance = $product->getTypeInstance();
+                $productRows = $this->processProduct($product, $attributesConfigList);
 
-                // CONFIGURABLE AND GROUPED PRODUCTS FLOW
-                if ($typeInstance instanceof Configurable || $typeInstance instanceof Grouped) {
-                    $confAndGroupedRows =
-                        $this->getConfigurableAndGroupedRows($typeInstance, $product, $attributesConfigList);
-
-                    // @phpcs:ignore
-                    $rows = array_merge($rows, $confAndGroupedRows);
-
-                    $currentPage++;
-                    continue;
-                }
-
-                // BUNDLE PRODUCTS FLOW
-                if ($typeInstance instanceof BundleProduct) {
-                    $bundleRows = $this->getBundleProductRows($typeInstance, $product, $attributesConfigList);
-                    // @phpcs:ignore
-                    $rows = array_merge($rows, $bundleRows);
-
-                    $currentPage++;
-                    continue;
-                }
-
-                // SIMPLE PRODUCTS FLOW
-                try {
-                    $rows[$product->getId()] = $this->productToRowMapper->map($product, $attributesConfigList);
-                } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
-                    throw new GenerateFeedForStoreException(
-                        __(
-                            'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
-                            $product->getId(),
-                            $exception->getMessage()
-                        ),
-                        $exception
-                    );
-                }
+                // phpcs:ignore Magento2.Performance.ForeachArrayMerge.ForeachArrayMerge
+                $rows = array_merge($rows, $productRows);
             }
 
             $currentPage++;
@@ -165,24 +134,95 @@ class GenerateFeedForStore
      * @throws GenerateFeedForStoreException
      * @throws NoSuchEntityException
      */
-    private function getConfigurableAndGroupedRows(
-        AbstractType $typeInstance,
+    private function processProduct(Product $product, AttributeConfigDataList $attributesConfigList): array
+    {
+        $typeInstance = $product->getTypeInstance();
+
+        if ($typeInstance instanceof Configurable) {
+            return $this->getConfigurableProductRows($product, $attributesConfigList);
+        }
+
+        if ($typeInstance instanceof Grouped) {
+            return $this->getGroupedProductRows($typeInstance, $product, $attributesConfigList);
+        }
+
+        if ($typeInstance instanceof BundleProduct) {
+            return $this->getBundleProductRows($typeInstance, $product, $attributesConfigList);
+        }
+
+        return $this->getSimpleProductRows($product, $attributesConfigList);
+    }
+
+    /**
+     * @throws GenerateFeedForStoreException
+     */
+    private function getSimpleProductRows(Product $product, AttributeConfigDataList $attributesConfigList): array
+    {
+        try {
+            return [$product->getId() => $this->productToRowMapper->map($product, $attributesConfigList)];
+        } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
+            throw new GenerateFeedForStoreException(
+                __(
+                    'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
+                    $product->getId(),
+                    $exception->getMessage()
+                ),
+                $exception
+            );
+        }
+    }
+
+    /**
+     * @throws GenerateFeedForStoreException
+     * @throws NoSuchEntityException
+     */
+    private function getConfigurableProductRows(
         Product $product,
         AttributeConfigDataList $attributesConfigList
     ): array {
-        $rows = [];
+        $storeId = (int)$product->getStoreId();
+        $configExportType = $this->configProvider->getConfigurableExportType($storeId);
 
-        $childProducts = $typeInstance instanceof Grouped ?
-            $typeInstance->getAssociatedProducts($product) : $typeInstance->getUsedProducts($product);
+        if ($configExportType === ConfigurableExportType::EXPORT_PARENT_PRODUCTS) {
+            return $this->getConfigurableParentProductRows($product, $attributesConfigList);
+        }
+
+        return $this->getConfigurableChildProductRows($product, $attributesConfigList);
+    }
+
+    /**
+     * @throws GenerateFeedForStoreException
+     * @throws NoSuchEntityException
+     */
+    private function getGroupedProductRows(
+        Grouped $typeInstance,
+        Product $product,
+        AttributeConfigDataList $attributesConfigList
+    ): array {
+        /** @var array<int, array<string, mixed>> $rows */
+        $rows = [];
+        $childProducts = $typeInstance->getAssociatedProducts($product);
 
         foreach ($childProducts as $childProduct) {
+            /** @var Product $childProduct */
             if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
+                continue;
+            }
+
+            $visibility = (int)$childProduct->getVisibility();
+
+            if ($visibility === \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE) {
                 continue;
             }
 
             try {
                 $childProduct = $this->productRepository
                     ->get($childProduct->getSku(), false, $childProduct->getStoreId());
+
+                if (!$childProduct instanceof Product) {
+                    throw new \InvalidArgumentException('Expected Product instance');
+                }
+
                 $rows[$childProduct->getId()] = $this->productToRowMapper
                     ->map($childProduct, $attributesConfigList);
             } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
@@ -209,6 +249,7 @@ class GenerateFeedForStore
         Product $product,
         AttributeConfigDataList $attributesConfigList
     ): array {
+        /** @var array<int, array<string, mixed>> $rows */
         $rows = [];
         $childProductIds = $typeInstance->getChildrenIds($product->getId());
 
@@ -218,6 +259,10 @@ class GenerateFeedForStore
                     $childProduct = $this->productRepository
                         ->getById($childProductId, false, $product->getStoreId());
 
+                    if (!$childProduct instanceof Product) {
+                        throw new \InvalidArgumentException('Expected Product instance');
+                    }
+    
                     if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
                         continue;
                     }
@@ -238,5 +283,117 @@ class GenerateFeedForStore
         }
 
         return $rows;
+    }
+
+    /**
+     * @throws GenerateFeedForStoreException
+     * @throws NoSuchEntityException
+     */
+    private function getConfigurableParentProductRows(
+        Product $product,
+        AttributeConfigDataList $attributesConfigList
+    ): array {
+        $typeInstance = $product->getTypeInstance();
+        /** @var Configurable $typeInstance */
+        $childProducts = $typeInstance->getUsedProducts($product);
+
+        $availableChildren = $this->getAvailableChildProducts(array_map(static function ($product) {
+            if (!$product instanceof Product) {
+                throw new \InvalidArgumentException('Expected Product instance');
+            }
+
+            return $product;
+        }, $childProducts));
+
+        if (empty($availableChildren)) {
+            return [];
+        }
+
+        try {
+            return [$product->getId() => $this->productToRowMapper->map($product, $attributesConfigList)];
+        } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
+            throw new GenerateFeedForStoreException(
+                __(
+                    'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
+                    $product->getId(),
+                    $exception->getMessage()
+                ),
+                $exception
+            );
+        }
+    }
+
+    /**
+     * @throws GenerateFeedForStoreException
+     * @throws NoSuchEntityException
+     */
+    private function getConfigurableChildProductRows(
+        Product $product,
+        AttributeConfigDataList $attributesConfigList
+    ): array {
+        /** @var array<int, array<string, mixed>> $rows */
+        $rows = [];
+        $typeInstance = $product->getTypeInstance();
+        /** @var Configurable $typeInstance */
+        $childProducts = $typeInstance->getUsedProducts($product);
+
+        foreach ($childProducts as $childProduct) {
+            /** @var Product $childProduct */
+            if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
+                continue;
+            }
+
+            $visibility = (int)$childProduct->getVisibility();
+
+            if ($visibility === \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE) {
+                continue;
+            }
+
+            try {
+                $childProduct = $this->productRepository
+                    ->get($childProduct->getSku(), false, $childProduct->getStoreId());
+
+                if (!$childProduct instanceof Product) {
+                    throw new \InvalidArgumentException('Expected Product instance');
+                }
+
+                $rows[$childProduct->getId()] = $this->productToRowMapper
+                    ->map($childProduct, $attributesConfigList);
+            } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
+                throw new GenerateFeedForStoreException(
+                    __(
+                        'Product can not be mapped to feed row. Product ID: %1 . Error: %2',
+                        $product->getId(),
+                        $exception->getMessage()
+                    ),
+                    $exception
+                );
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param Product[] $childProducts
+     * @return Product[]
+     */
+    private function getAvailableChildProducts(array $childProducts): array
+    {
+        /** @var Product[] $availableChildren */
+        $availableChildren = [];
+
+        foreach ($childProducts as $childProduct) {
+            if (
+                (int) $childProduct->getStatus() !== Status::STATUS_ENABLED ||
+                !$childProduct->isInStock()
+            ) {
+                continue;
+            }
+
+            $availableChildren[] = $childProduct;
+        }
+
+        return $availableChildren;
     }
 }

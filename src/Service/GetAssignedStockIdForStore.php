@@ -10,6 +10,7 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class GetAssignedStockIdForStore
 {
+    /** @var array<int, ?int> */
     private array $cache = [];
     private GetAssignedStockIdForWebsite $getAssignedStockIdForWebsite;
     private StoreManagerInterface $storeManager;

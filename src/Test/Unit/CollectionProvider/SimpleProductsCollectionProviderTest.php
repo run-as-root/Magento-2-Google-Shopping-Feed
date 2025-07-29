@@ -34,10 +34,16 @@ final class SimpleProductsCollectionProviderTest extends TestCase
             ->method('addAttributeToSelect')
             ->with('*')
             ->willReturn($collection);
-        $collection->expects($this->exactly(2))
+        $invokedCount = $this->exactly(2);
+        $collection->expects($invokedCount)
             ->method('addAttributeToFilter')
-            ->withConsecutive(['type_id', 'simple'], ['status', 1])
-            ->willReturnSelf();
+            ->willReturnCallback(function ($attribute, $value) use ($collection, $invokedCount) {
+                match ($invokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals(['type_id', ['eq' => 'simple']], [$attribute, $value]),
+                    2 => $this->assertEquals(['status', ['eq' => 1]], [$attribute, $value]),
+                };
+                return $collection;
+            });
         $collection->expects($this->once())
             ->method('addCategoriesFilter')
             ->with([ 'in' => $categories ])

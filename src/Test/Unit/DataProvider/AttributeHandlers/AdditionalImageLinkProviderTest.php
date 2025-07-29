@@ -102,11 +102,16 @@ final class AdditionalImageLinkProviderTest extends TestCase
         $productImageLinkTwo = 'https://app.default.test/media/catalog/product/o/e/image-two.jpg';
         $productImageLinkThree = 'https://app.default.test/media/catalog/product/o/e/image-three.jpg';
 
+        $invokedCount = $this->exactly(2);
         $this->productImageUrlProviderMock
-            ->expects($this->exactly(2))
+            ->expects($invokedCount)
             ->method('get')
-            ->withConsecutive([$productImageTwo], [$productImageThree])
-            ->willReturnOnConsecutiveCalls($productImageLinkTwo, $productImageLinkThree);
+            ->willReturnCallback(function ($imageFile) use ($productImageTwo, $productImageThree, $productImageLinkTwo, $productImageLinkThree, $invokedCount) {
+                return match ($invokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals($productImageTwo, $imageFile) ?: $productImageLinkTwo,
+                    2 => $this->assertEquals($productImageThree, $imageFile) ?: $productImageLinkThree,
+                };
+            });
 
         $expected = [$productImageLinkTwo, $productImageLinkThree];
 

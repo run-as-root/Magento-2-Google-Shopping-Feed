@@ -15,6 +15,9 @@ class ArrayToXmlConverter
         $this->dateTime = $dateTime;
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     */
     public function convert(array $rows): string
     {
         $xml = $this->getOpenRootTag() . PHP_EOL;
@@ -45,6 +48,9 @@ XML;
 XML;
     }
 
+    /**
+     * @param array<string, mixed> $row
+     */
     private function getItem(array $row): string
     {
         return <<<XML
@@ -74,11 +80,7 @@ XML;
     }
 
     /**
-     * @param array $row
-     * @param string $attrKey
-     * @param string $tagKey
-     *
-     * @return string
+     * @param array<string, mixed> $row
      */
     private function getOptionalProductAttr(array $row, string $attrKey, string $tagKey = ''): string
     {
@@ -93,6 +95,9 @@ XML;
         return '';
     }
 
+    /**
+     * @param array<string> $imageLinks
+     */
     private function getAdditionalImageLinks(array $imageLinks): string
     {
         $result = '';
@@ -104,6 +109,9 @@ XML;
         return $result;
     }
 
+    /**
+     * @param array<array<string, string>> $productDetails
+     */
     private function getProductDetail(array $productDetails): string
     {
         $result = '';
@@ -121,6 +129,9 @@ XML;
         return $result;
     }
 
+    /**
+     * @param array<array<string, string>> $shippingData
+     */
     private function getShipping(array $shippingData): string
     {
         $shipping = '';
