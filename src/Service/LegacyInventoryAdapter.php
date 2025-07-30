@@ -10,7 +10,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 class LegacyInventoryAdapter implements InventoryAdapterInterface
 {
-    private const DEFAULT_STOCK_ID = 1;
+    private const INT DEFAULT_STOCK_ID = 1;
 
     /** @var array<int, int> */
     private array $stockIdCache = [];
@@ -29,8 +29,6 @@ class LegacyInventoryAdapter implements InventoryAdapterInterface
             return $this->stockIdCache[$storeId];
         }
 
-        // In legacy inventory, there's only one default stock (stock_id = 1)
-        // regardless of store/website
         $stockId = self::DEFAULT_STOCK_ID;
         $this->stockIdCache[$storeId] = $stockId;
 

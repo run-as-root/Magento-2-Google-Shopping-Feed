@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace RunAsRoot\GoogleShoppingFeed\Service;
 
-use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
 
 class MsiInventoryAdapter implements InventoryAdapterInterface
@@ -47,6 +46,7 @@ class MsiInventoryAdapter implements InventoryAdapterInterface
         $msiResults = $this->areProductsSalable->execute($skus, $stockId);
 
         $results = [];
+
         foreach ($msiResults as $msiResult) {
             $results[] = new InventorySalableResult(
                 $msiResult->getSku(),

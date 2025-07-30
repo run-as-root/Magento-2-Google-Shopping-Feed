@@ -9,15 +9,11 @@ use Magento\Framework\Exception\LocalizedException;
 interface InventoryAdapterInterface
 {
     /**
-     * Get assigned stock ID for a given store
-     *
      * @throws LocalizedException
      */
     public function getAssignedStockIdForStore(int $storeId): int;
 
     /**
-     * Check if products are salable for the given stock
-     *
      * @param string[] $skus
      * @throws LocalizedException
      * @return InventorySalableResultInterface[]

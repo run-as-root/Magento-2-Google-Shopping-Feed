@@ -7,14 +7,15 @@ namespace RunAsRoot\GoogleShoppingFeed\Service;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Framework\ObjectManagerInterface;
+use Magento\InventorySales\Model\AreProductsSalable;
+use Magento\InventorySales\Model\ResourceModel\GetAssignedStockIdForWebsite;
 use Magento\Store\Model\StoreManagerInterface;
 use RunAsRoot\GoogleShoppingFeed\Exception\InventorySystemUnavailableException;
 
 class InventoryAdapterFactory
 {
-    private const MSI_INVENTORY_SALES_MODULE = 'Magento_InventorySales';
-    private const MSI_GET_ASSIGNED_STOCK_CLASS = 'Magento\InventorySales\Model\ResourceModel\GetAssignedStockIdForWebsite';
-    private const MSI_ARE_PRODUCTS_SALABLE_CLASS = 'Magento\InventorySales\Model\AreProductsSalable';
+    private const STRING MSI_GET_ASSIGNED_STOCK_CLASS = GetAssignedStockIdForWebsite::class;
+    private const STRING MSI_ARE_PRODUCTS_SALABLE_CLASS = AreProductsSalable::class;
 
     private ComponentRegistrar $componentRegistrar;
     private ObjectManagerInterface $objectManager;
@@ -51,29 +52,27 @@ class InventoryAdapterFactory
         );
     }
 
+    protected function isLegacyInventoryAvailable(): bool
+    {
+        return interface_exists(StockRegistryInterface::class);
+    }
+
     private function isMsiAvailable(): bool
     {
-        // Check if required MSI classes exist
-        if (!class_exists(self::MSI_GET_ASSIGNED_STOCK_CLASS) 
-            || !class_exists(self::MSI_ARE_PRODUCTS_SALABLE_CLASS)) {
+        if (
+            !class_exists(self::MSI_GET_ASSIGNED_STOCK_CLASS)
+            || !class_exists(self::MSI_ARE_PRODUCTS_SALABLE_CLASS)
+        ) {
             return false;
         }
 
-        // Try to create the services to ensure they're properly configured in DI
         try {
             $this->objectManager->create(self::MSI_GET_ASSIGNED_STOCK_CLASS);
             $this->objectManager->create(self::MSI_ARE_PRODUCTS_SALABLE_CLASS);
             return true;
         } catch (\Throwable $e) {
-            // MSI classes exist but can't be instantiated (likely module disabled)
             return false;
         }
-    }
-
-    protected function isLegacyInventoryAvailable(): bool
-    {
-        // Check if CatalogInventory interfaces are available
-        return interface_exists(StockRegistryInterface::class);
     }
 
     private function createMsiAdapter(): MsiInventoryAdapter
