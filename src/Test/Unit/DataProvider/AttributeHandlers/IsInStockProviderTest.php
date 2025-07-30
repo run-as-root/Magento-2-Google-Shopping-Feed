@@ -7,44 +7,47 @@ namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\DataProvider\AttributeHandlers;
 use Magento\Catalog\Model\Product;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Phrase;
-use Magento\InventorySales\Model\AreProductsSalable;
-use Magento\InventorySales\Model\IsProductSalableResult;
 use Magento\Store\Model\Store;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\IsInStockProvider;
-use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler;
 use RunAsRoot\GoogleShoppingFeed\Service\GetAssignedStockIdForStore;
+use RunAsRoot\GoogleShoppingFeed\Service\InventoryAdapterFactory;
+use RunAsRoot\GoogleShoppingFeed\Service\InventoryAdapterInterface;
+use RunAsRoot\GoogleShoppingFeed\Service\InventorySalableResult;
 
 final class IsInStockProviderTest extends TestCase
 {
     private IsInStockProvider $sut;
 
-    /**
-     * @var GetAssignedStockIdForStore|MockObject
-     */
+    /** @var GetAssignedStockIdForStore|MockObject */
     private $getAssignedStockIdForStoreMock;
 
-    /**
-     * @var AreProductsSalable|MockObject
-     */
-    private $areProductsSalableMock;
+    /** @var InventoryAdapterFactory|MockObject */
+    private $inventoryAdapterFactoryMock;
+
+    /** @var InventoryAdapterInterface|MockObject */
+    private $inventoryAdapterMock;
 
     protected function setUp(): void
     {
         $this->getAssignedStockIdForStoreMock = $this->createMock(GetAssignedStockIdForStore::class);
-        $this->areProductsSalableMock = $this->createMock(AreProductsSalable::class);
-        $this->sut = new IsInStockProvider($this->getAssignedStockIdForStoreMock, $this->areProductsSalableMock);
+        $this->inventoryAdapterFactoryMock = $this->createMock(InventoryAdapterFactory::class);
+        $this->inventoryAdapterMock = $this->createMock(InventoryAdapterInterface::class);
+        
+        $this->sut = new IsInStockProvider(
+            $this->getAssignedStockIdForStoreMock,
+            $this->inventoryAdapterFactoryMock
+        );
     }
 
     /**
      * @dataProvider dataProvider
      */
-    public function testGet(bool $isSalabled, string $expected): void
+    public function testGet(bool $isSalable, string $expected): void
     {
         $productMock = $this->createMock(Product::class);
         $storeMock = $this->createMock(Store::class);
-        $isProductSalableResultMock = $this->createMock(IsProductSalableResult::class);
 
         $productMock->expects($this->once())
             ->method('getStore')
@@ -67,15 +70,17 @@ final class IsInStockProviderTest extends TestCase
             ->method('getSku')
             ->willReturn($productSku);
 
-        $this->areProductsSalableMock
+        $this->inventoryAdapterFactoryMock
             ->expects($this->once())
-            ->method('execute')
-            ->with([$productSku], $stockId)
-            ->willReturn([$isProductSalableResultMock]);
+            ->method('create')
+            ->willReturn($this->inventoryAdapterMock);
 
-        $isProductSalableResultMock->expects($this->once())
-            ->method('isSalable')
-            ->willReturn($isSalabled);
+        $salableResult = new InventorySalableResult($productSku, $isSalable);
+        $this->inventoryAdapterMock
+            ->expects($this->once())
+            ->method('areProductsSalable')
+            ->with([$productSku], $stockId)
+            ->willReturn([$salableResult]);
 
         $this->assertEquals($expected, $this->sut->get($productMock));
     }
@@ -130,6 +135,47 @@ final class IsInStockProviderTest extends TestCase
             ->method('execute')
             ->with($storeId)
             ->willReturn(null);
+
+        $this->assertEquals('out_of_stock', $this->sut->get($productMock));
+    }
+
+    public function testItShouldReturnOutOfStockWhenInventoryAdapterThrowsException(): void
+    {
+        $productMock = $this->createMock(Product::class);
+        $storeMock = $this->createMock(Store::class);
+
+        $productMock->expects($this->once())
+            ->method('getStore')
+            ->willReturn($storeMock);
+
+        $storeId = 100;
+        $stockId = 200;
+        $productSku = 'product-sku';
+
+        $storeMock->expects($this->once())
+            ->method('getId')
+            ->willReturn($storeId);
+
+        $this->getAssignedStockIdForStoreMock
+            ->expects($this->once())
+            ->method('execute')
+            ->with($storeId)
+            ->willReturn($stockId);
+
+        $productMock->expects($this->once())
+            ->method('getSku')
+            ->willReturn($productSku);
+
+        $this->inventoryAdapterFactoryMock
+            ->expects($this->once())
+            ->method('create')
+            ->willReturn($this->inventoryAdapterMock);
+
+        $this->inventoryAdapterMock
+            ->expects($this->once())
+            ->method('areProductsSalable')
+            ->with([$productSku], $stockId)
+            ->willThrowException(new LocalizedException(new Phrase('Inventory error')));
 
         $this->assertEquals('out_of_stock', $this->sut->get($productMock));
     }

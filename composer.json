@@ -9,13 +9,16 @@
         "psr/log": "*",
         "magento/module-configurable-product": "*",
         "magento/module-import-export": "*",
-        "magento/module-inventory-sales": "*",
-        "magento/module-inventory-sales-api": "*",
         "magento/module-catalog": "*",
+        "magento/module-catalog-inventory": "*",
         "magento/module-review": "*",
         "magento/module-eav": "*",
         "magento/module-directory": "*",
         "magento/module-grouped-product": "^100.4"
+    },
+    "suggest": {
+        "magento/module-inventory-sales": "For Multi Source Inventory (MSI) support. If not installed, the module will fallback to legacy catalog inventory.",
+        "magento/module-inventory-sales-api": "Required when using MSI inventory system for stock management."
     },
     "require-dev": {
         "phpunit/phpunit": "~9.5.20",

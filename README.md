@@ -10,12 +10,33 @@ composer require run_as_root/ext-magento2-google-shopping-feed
 bin/magento setup:upgrade
 ```
 
+### Inventory System Compatibility
+
+This module automatically detects and supports both inventory systems:
+
+- **Multi Source Inventory (MSI)**: If MSI modules are installed, the module will use the MSI system for stock management
+- **Legacy Catalog Inventory**: If MSI is not available, the module automatically falls back to the legacy catalog inventory system
+
+**MSI Support (Optional)**:
+If you want to use MSI features, install the MSI modules:
+```
+composer require magento/module-inventory-sales magento/module-inventory-sales-api
+```
+
+The module will automatically detect MSI availability and use the appropriate inventory system without any configuration changes.
+
 ## Features
 
 ### Feed generation
 
 Generate product feed every 2 hours with minimal required attributes, for each storeview.  
 Places file into `pub/media/run_as_root/feed/%s_store_%s_feed.xml`.
+
+### Configurable Product Export Control
+
+Configure how configurable products are exported to the feed:
+- **Only Parent Products**: Export the configurable product itself with aggregated data from available children (lowest price, stock status based on child availability, parent product images)
+- **Only Child Products**: Export child products that are visible individually (visibility levels: Catalog, Search, or Catalog + Search)
 
 ## Technical Specification
 
@@ -70,12 +91,26 @@ Performs iteration on all products provided by this collection provider `\RunAsR
 
 ## Configuration
 
-| tab     | group   | section               | field              |
-|:--------|:--------|:----------------------|:-------------------|
-| run_as_root | general | Product Feed Exporter | Enable             |
-| run_as_root | general | Product Feed Exporter | Cron Schedule      |
-| run_as_root | general | Product Feed Exporter | Category Whitelist |
-| run_as_root | general | Product Feed Exporter | Category Blacklist |
+| tab     | group   | section               | field                 |
+|:--------|:--------|:----------------------|:----------------------|
+| run_as_root | general | Product Feed Exporter | Enable                |
+| run_as_root | general | Product Feed Exporter | Cron Schedule         |
+| run_as_root | general | Product Feed Exporter | Category Whitelist    |
+| run_as_root | general | Product Feed Exporter | Category Blacklist    |
+| run_as_root | general | Product Feed Exporter | Configurables Export  |
+
+### Configurables Export Options
+
+The "Configurables Export" setting controls how configurable products are handled in the feed:
+
+- **Only Child Products** (default): Exports child products that are visible individually (Catalog, Search, or Catalog + Search visibility)
+- **Only Parent Products**: Exports the configurable product itself instead of children, with aggregated data:
+  - Price: Lowest price from available (enabled and in-stock) children
+  - Stock Status: In-stock if at least one child is available
+  - Images: Uses the configurable product's base image
+  - Skips configurable products with no available children
+
+This setting is configurable per store view to allow different export strategies for different stores.
 
 
 ## Extensability points
