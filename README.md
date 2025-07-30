@@ -10,6 +10,21 @@ composer require run_as_root/ext-magento2-google-shopping-feed
 bin/magento setup:upgrade
 ```
 
+### Inventory System Compatibility
+
+This module automatically detects and supports both inventory systems:
+
+- **Multi Source Inventory (MSI)**: If MSI modules are installed, the module will use the MSI system for stock management
+- **Legacy Catalog Inventory**: If MSI is not available, the module automatically falls back to the legacy catalog inventory system
+
+**MSI Support (Optional)**:
+If you want to use MSI features, install the MSI modules:
+```
+composer require magento/module-inventory-sales magento/module-inventory-sales-api
+```
+
+The module will automatically detect MSI availability and use the appropriate inventory system without any configuration changes.
+
 ## Features
 
 ### Feed generation
