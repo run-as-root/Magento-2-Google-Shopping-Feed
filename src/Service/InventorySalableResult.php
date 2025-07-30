@@ -8,6 +8,7 @@ class InventorySalableResult implements InventorySalableResultInterface
 {
     private string $sku;
     private bool $isSalable;
+
     /** @var string[] */
     private array $errors;
 

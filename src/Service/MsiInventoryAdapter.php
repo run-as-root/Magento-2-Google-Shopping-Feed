@@ -10,7 +10,6 @@ class MsiInventoryAdapter implements InventoryAdapterInterface
 {
     /** @var array<int, int> */
     private array $stockIdCache = [];
-
     private $getAssignedStockIdForWebsite;
     private $areProductsSalable;
     private StoreManagerInterface $storeManager;

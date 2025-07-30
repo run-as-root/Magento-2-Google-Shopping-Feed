@@ -14,7 +14,6 @@ class LegacyInventoryAdapter implements InventoryAdapterInterface
 
     /** @var array<int, int> */
     private array $stockIdCache = [];
-
     private StockRegistryInterface $stockRegistry;
 
     public function __construct(
@@ -49,13 +48,13 @@ class LegacyInventoryAdapter implements InventoryAdapterInterface
                 $results[] = new InventorySalableResult(
                     $sku,
                     false,
-                    ['Product not found: ' . $e->getMessage()]
+                    [ 'Product not found: ' . $e->getMessage() ]
                 );
             } catch (LocalizedException $e) {
                 $results[] = new InventorySalableResult(
                     $sku,
                     false,
-                    ['Error checking stock: ' . $e->getMessage()]
+                    [ 'Error checking stock: ' . $e->getMessage() ]
                 );
             }
         }

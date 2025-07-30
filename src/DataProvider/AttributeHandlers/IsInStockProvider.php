@@ -41,7 +41,7 @@ class IsInStockProvider implements AttributeHandlerInterface
 
         try {
             $inventoryAdapter = $this->getInventoryAdapter();
-            $salableResults = $inventoryAdapter->areProductsSalable([$product->getSku()], $stockId);
+            $salableResults = $inventoryAdapter->areProductsSalable([ $product->getSku() ], $stockId);
 
             $salableResult = reset($salableResults);
 
