@@ -52,23 +52,26 @@ final class GenerateFeedServiceTest extends TestCase
             ->method('getStores')
             ->willReturn($stores);
 
-        $this->emulation->expects($this->exactly(count($storeIds)))
+        $emulationStartInvokedCount = $this->exactly(count($storeIds));
+        $this->emulation->expects($emulationStartInvokedCount)
             ->method('startEnvironmentEmulation')
-            ->withConsecutive(...array_map(static function ($id): array {
-                return [ $id ];
-            }, $storeIds));
+            ->willReturnCallback(function ($storeId) use ($storeIds, $emulationStartInvokedCount) {
+                $this->assertEquals($storeIds[$emulationStartInvokedCount->numberOfInvocations() - 1], $storeId);
+            });
 
-        $this->generateFeedForStore->expects($this->exactly(count($stores)))
+        $feedGenerateInvokedCount = $this->exactly(count($stores));
+        $this->generateFeedForStore->expects($feedGenerateInvokedCount)
             ->method('execute')
-            ->withConsecutive(...array_map(static function ($store): array {
-                return [$store];
-            }, $stores));
+            ->willReturnCallback(function ($store) use ($stores, $feedGenerateInvokedCount) {
+                $this->assertEquals($stores[$feedGenerateInvokedCount->numberOfInvocations() - 1], $store);
+            });
 
-        $this->registry->expects($this->exactly(count($stores)))
+        $registryCleanInvokedCount = $this->exactly(count($stores));
+        $this->registry->expects($registryCleanInvokedCount)
             ->method('cleanForStore')
-            ->withConsecutive(...array_map(static function ($storeId): array {
-                return [$storeId];
-            }, $storeIds));
+            ->willReturnCallback(function ($storeId) use ($storeIds, $registryCleanInvokedCount) {
+                $this->assertEquals($storeIds[$registryCleanInvokedCount->numberOfInvocations() - 1], $storeId);
+            });
 
         $this->emulation->expects($this->exactly(count($storeIds)))
             ->method('stopEnvironmentEmulation');
@@ -85,23 +88,25 @@ final class GenerateFeedServiceTest extends TestCase
             ->method('getStores')
             ->willReturn($stores);
 
-        $this->emulation->expects($this->exactly(2))
+        $emulationStartInvokedCount = $this->exactly(2);
+        $this->emulation->expects($emulationStartInvokedCount)
             ->method('startEnvironmentEmulation')
-            ->withConsecutive(...array_map(static function ($id): array {
-                return [ $id ];
-            }, $storeIds));
+            ->willReturnCallback(function ($storeId) use ($storeIds, $emulationStartInvokedCount) {
+                $this->assertEquals($storeIds[$emulationStartInvokedCount->numberOfInvocations() - 1], $storeId);
+            });
 
-        $this->generateFeedForStore->expects($this->exactly(2))
+        $feedGenerateInvokedCount = $this->exactly(2);
+        $this->generateFeedForStore->expects($feedGenerateInvokedCount)
             ->method('execute')
-            ->withConsecutive(...array_map(static function ($store): array {
-                return [$store];
-            }, $stores))
-            ->willReturnOnConsecutiveCalls(
-              null,
-              $this->throwException(new HandlerIsNotSpecifiedException(
-                  __('Handler should be specified for each attribute.')
-              ))
-        );
+            ->willReturnCallback(function ($store) use ($stores, $feedGenerateInvokedCount) {
+                return match ($feedGenerateInvokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals($stores[0], $store) ?: null,
+                    2 => $this->assertEquals($stores[1], $store) 
+                         ?: throw new HandlerIsNotSpecifiedException(
+                             __('Handler should be specified for each attribute.')
+                         ),
+                };
+            });
 
         $this->emulation->expects($this->once())
             ->method('stopEnvironmentEmulation');
@@ -124,23 +129,25 @@ final class GenerateFeedServiceTest extends TestCase
             ->method('getStores')
             ->willReturn($stores);
 
-        $this->emulation->expects($this->exactly(2))
+        $emulationStartInvokedCount = $this->exactly(2);
+        $this->emulation->expects($emulationStartInvokedCount)
             ->method('startEnvironmentEmulation')
-            ->withConsecutive(...array_map(static function ($id): array {
-                return [ $id ];
-            }, $storeIds));
+            ->willReturnCallback(function ($storeId) use ($storeIds, $emulationStartInvokedCount) {
+                $this->assertEquals($storeIds[$emulationStartInvokedCount->numberOfInvocations() - 1], $storeId);
+            });
 
-        $this->generateFeedForStore->expects($this->exactly(2))
+        $feedGenerateInvokedCount = $this->exactly(2);
+        $this->generateFeedForStore->expects($feedGenerateInvokedCount)
             ->method('execute')
-            ->withConsecutive(...array_map(static function ($store): array {
-                return [ $store ];
-            }, $stores))
-            ->willReturnOnConsecutiveCalls(
-                null,
-                $this->throwException(new WrongInstanceException(
-                    __('Class should implement AttributeHandlerInterface interface.')
-                ))
-            );
+            ->willReturnCallback(function ($store) use ($stores, $feedGenerateInvokedCount) {
+                return match ($feedGenerateInvokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals($stores[0], $store) ?: null,
+                    2 => $this->assertEquals($stores[1], $store) 
+                         ?: throw new WrongInstanceException(
+                             __('Class should implement AttributeHandlerInterface interface.')
+                         ),
+                };
+            });
 
         $this->registry->expects($this->once())
             ->method('cleanForStore')
