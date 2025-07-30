@@ -14,8 +14,8 @@ use RunAsRoot\GoogleShoppingFeed\Exception\InventorySystemUnavailableException;
 
 class InventoryAdapterFactory
 {
-    private const STRING MSI_GET_ASSIGNED_STOCK_CLASS = GetAssignedStockIdForWebsite::class;
-    private const STRING MSI_ARE_PRODUCTS_SALABLE_CLASS = AreProductsSalable::class;
+    private const MSI_GET_ASSIGNED_STOCK_CLASS = GetAssignedStockIdForWebsite::class;
+    private const MSI_ARE_PRODUCTS_SALABLE_CLASS = AreProductsSalable::class;
 
     private ComponentRegistrar $componentRegistrar;
     private ObjectManagerInterface $objectManager;

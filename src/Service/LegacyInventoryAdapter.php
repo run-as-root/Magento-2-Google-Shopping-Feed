@@ -10,7 +10,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 
 class LegacyInventoryAdapter implements InventoryAdapterInterface
 {
-    private const INT DEFAULT_STOCK_ID = 1;
+    private const DEFAULT_STOCK_ID = 1;
 
     /** @var array<int, int> */
     private array $stockIdCache = [];
