@@ -42,14 +42,16 @@ final class ProductDetailProviderTest extends TestCase
         $attributeHandlerOne = $this->createMock(SimpleAttributeHandler::class);
         $attributeHandlerTwo = $this->createMock(SimpleAttributeHandler::class);
 
+        $invokedCount = $this->exactly(2);
         $this->simpleAttributeHandlerFactoryMock
-            ->expects($this->exactly(2))
+            ->expects($invokedCount)
             ->method('create')
-            ->withConsecutive(
-                [['attributeCode' => 'material_cloth']],
-                [['attributeCode' => 'fill']],
-            )
-            ->willReturnOnConsecutiveCalls($attributeHandlerOne, $attributeHandlerTwo);
+            ->willReturnCallback(function ($data) use ($attributeHandlerOne, $attributeHandlerTwo, $invokedCount) {
+                return match ($invokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals(['attributeCode' => 'material_cloth'], $data) ?: $attributeHandlerOne,
+                    2 => $this->assertEquals(['attributeCode' => 'fill'], $data) ?: $attributeHandlerTwo,
+                };
+            });
 
         $attributeHandlerOne->expects($this->once())
             ->method('get')

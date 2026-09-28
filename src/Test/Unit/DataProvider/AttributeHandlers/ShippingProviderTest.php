@@ -98,14 +98,20 @@ final class ShippingProviderTest extends TestCase
             ->with($selectMock)
             ->willReturn($shippingTableRates);
 
+        $currencyGetInvokedCount = $this->exactly(2);
         $this->currencyAmountProviderMock
-            ->expects($this->exactly(2))
+            ->expects($currencyGetInvokedCount)
             ->method('get')
-            ->withConsecutive(
-                [23.68, $storeId],
-                [4.95, $storeId]
-            )
-            ->willReturnOnConsecutiveCalls('23,68 EUR', '4,95 EUR');
+            ->willReturnCallback(function ($amount, $storeIdParam) use ($storeId, $currencyGetInvokedCount) {
+                return match ($currencyGetInvokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals(23.68, $amount) 
+                         ?: $this->assertEquals($storeId, $storeIdParam) 
+                         ?: '23,68 EUR',
+                    2 => $this->assertEquals(4.95, $amount) 
+                         ?: $this->assertEquals($storeId, $storeIdParam) 
+                         ?: '4,95 EUR',
+                };
+            });
 
         $expected = [
             ['country' => 'CH', 'price' => '23,68 EUR'],

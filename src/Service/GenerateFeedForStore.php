@@ -94,6 +94,7 @@ class GenerateFeedForStore
         $whitelistedCategories = $this->allowedCategoryIdsProvider->get($storeId);
         $currentPage = 1;
 
+        /** @var array<int, array<string, mixed>> $rows */
         $rows = [];
 
         do {
@@ -106,6 +107,7 @@ class GenerateFeedForStore
             $items = $collection->getItems();
 
             foreach ($items as $product) {
+                /** @var Product $product */
                 if (isset($rows[$product->getId()])) {
                     continue;
                 }
@@ -197,10 +199,12 @@ class GenerateFeedForStore
         Product $product,
         AttributeConfigDataList $attributesConfigList
     ): array {
+        /** @var array<int, array<string, mixed>> $rows */
         $rows = [];
         $childProducts = $typeInstance->getAssociatedProducts($product);
 
         foreach ($childProducts as $childProduct) {
+            /** @var Product $childProduct */
             if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
                 continue;
             }
@@ -214,6 +218,11 @@ class GenerateFeedForStore
             try {
                 $childProduct = $this->productRepository
                     ->get($childProduct->getSku(), false, $childProduct->getStoreId());
+
+                if (!$childProduct instanceof Product) {
+                    throw new \InvalidArgumentException('Expected Product instance');
+                }
+
                 $rows[$childProduct->getId()] = $this->productToRowMapper
                     ->map($childProduct, $attributesConfigList);
             } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
@@ -240,6 +249,7 @@ class GenerateFeedForStore
         Product $product,
         AttributeConfigDataList $attributesConfigList
     ): array {
+        /** @var array<int, array<string, mixed>> $rows */
         $rows = [];
         $childProductIds = $typeInstance->getChildrenIds($product->getId());
 
@@ -249,6 +259,10 @@ class GenerateFeedForStore
                     $childProduct = $this->productRepository
                         ->getById($childProductId, false, $product->getStoreId());
 
+                    if (!$childProduct instanceof Product) {
+                        throw new \InvalidArgumentException('Expected Product instance');
+                    }
+    
                     if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
                         continue;
                     }
@@ -280,9 +294,16 @@ class GenerateFeedForStore
         AttributeConfigDataList $attributesConfigList
     ): array {
         $typeInstance = $product->getTypeInstance();
+        /** @var Configurable $typeInstance */
         $childProducts = $typeInstance->getUsedProducts($product);
 
-        $availableChildren = $this->getAvailableChildProducts($childProducts);
+        $availableChildren = $this->getAvailableChildProducts(array_map(static function ($product) {
+            if (!$product instanceof Product) {
+                throw new \InvalidArgumentException('Expected Product instance');
+            }
+
+            return $product;
+        }, $childProducts));
 
         if (empty($availableChildren)) {
             return [];
@@ -310,11 +331,14 @@ class GenerateFeedForStore
         Product $product,
         AttributeConfigDataList $attributesConfigList
     ): array {
+        /** @var array<int, array<string, mixed>> $rows */
         $rows = [];
         $typeInstance = $product->getTypeInstance();
+        /** @var Configurable $typeInstance */
         $childProducts = $typeInstance->getUsedProducts($product);
 
         foreach ($childProducts as $childProduct) {
+            /** @var Product $childProduct */
             if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
                 continue;
             }
@@ -328,6 +352,11 @@ class GenerateFeedForStore
             try {
                 $childProduct = $this->productRepository
                     ->get($childProduct->getSku(), false, $childProduct->getStoreId());
+
+                if (!$childProduct instanceof Product) {
+                    throw new \InvalidArgumentException('Expected Product instance');
+                }
+
                 $rows[$childProduct->getId()] = $this->productToRowMapper
                     ->map($childProduct, $attributesConfigList);
             } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
@@ -351,6 +380,7 @@ class GenerateFeedForStore
      */
     private function getAvailableChildProducts(array $childProducts): array
     {
+        /** @var Product[] $availableChildren */
         $availableChildren = [];
 
         foreach ($childProducts as $childProduct) {

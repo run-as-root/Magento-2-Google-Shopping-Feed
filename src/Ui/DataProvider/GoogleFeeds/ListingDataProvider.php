@@ -15,10 +15,14 @@ class ListingDataProvider extends DataProvider
 {
     private FeedRepositoryInterface $feedRepository;
 
+    /**
+     * @param array<string, mixed> $meta
+     * @param array<string, mixed> $data
+     */
     public function __construct(
-        $name,
-        $primaryFieldName,
-        $requestFieldName,
+        string $name,
+        string $primaryFieldName,
+        string $requestFieldName,
         ReportingInterface $reporting,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         RequestInterface $request,
@@ -42,6 +46,9 @@ class ListingDataProvider extends DataProvider
         $this->feedRepository = $feedRepository;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getData(): array
     {
         $items = $this->feedRepository->getList();

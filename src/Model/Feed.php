@@ -11,7 +11,7 @@ class Feed extends AbstractExtensibleModel implements FeedInterface
 {
     public function getFileName(): string
     {
-        return $this->getData(self::FILENAME);
+        return (string) $this->getData(self::FILENAME);
     }
 
     public function setFileName(string $fileName): FeedInterface
@@ -21,7 +21,7 @@ class Feed extends AbstractExtensibleModel implements FeedInterface
 
     public function getPath(): string
     {
-        return $this->getData(self::PATH);
+        return (string) $this->getData(self::PATH);
     }
 
     public function setPath(string $path): FeedInterface
@@ -31,7 +31,7 @@ class Feed extends AbstractExtensibleModel implements FeedInterface
 
     public function getLink(): string
     {
-        return $this->getData(self::LINK);
+        return (string) $this->getData(self::LINK);
     }
 
     public function setLink(string $link): FeedInterface
@@ -41,7 +41,7 @@ class Feed extends AbstractExtensibleModel implements FeedInterface
 
     public function getLastGenerated(): string
     {
-        return $this->getData(self::LAST_GENERATED);
+        return (string) $this->getData(self::LAST_GENERATED);
     }
 
     public function setLastGenerated(string $lastGenerated): FeedInterface
@@ -51,7 +51,7 @@ class Feed extends AbstractExtensibleModel implements FeedInterface
 
     public function getStore(): string
     {
-        return $this->getData(self::STORE);
+        return (string) $this->getData(self::STORE);
     }
 
     public function setStore(string $store): FeedInterface

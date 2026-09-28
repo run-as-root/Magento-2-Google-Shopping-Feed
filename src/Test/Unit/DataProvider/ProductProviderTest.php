@@ -33,7 +33,16 @@ final class ProductProviderTest extends TestCase
         $product2 = $this->createMock(Product::class);
 
         $collection = $this->createMock(Collection::class);
-        $collection->expects($this->exactly(2))->method('addAttributeToSelect')->withConsecutive(['url_key'],['image']);
+        
+        $addAttributeInvokedCount = $this->exactly(2);
+        $collection->expects($addAttributeInvokedCount)
+            ->method('addAttributeToSelect')
+            ->willReturnCallback(function ($attribute) use ($collection, $addAttributeInvokedCount) {
+                return match ($addAttributeInvokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals('url_key', $attribute) ?: $collection,
+                    2 => $this->assertEquals('image', $attribute) ?: $collection,
+                };
+            });
         $collection->expects($this->once())->method('addFieldToFilter')->with('entity_id', $id);
         $collection->expects($this->once())->method('addStoreFilter')->with($storeId);
         $collection->expects($this->once())->method('load');
@@ -51,7 +60,16 @@ final class ProductProviderTest extends TestCase
         $storeId = 9;
 
         $collection = $this->createMock(Collection::class);
-        $collection->expects($this->exactly(2))->method('addAttributeToSelect')->withConsecutive(['url_key'],['image']);
+        
+        $addAttributeInvokedCount = $this->exactly(2);
+        $collection->expects($addAttributeInvokedCount)
+            ->method('addAttributeToSelect')
+            ->willReturnCallback(function ($attribute) use ($collection, $addAttributeInvokedCount) {
+                return match ($addAttributeInvokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals('url_key', $attribute) ?: $collection,
+                    2 => $this->assertEquals('image', $attribute) ?: $collection,
+                };
+            });
         $collection->expects($this->once())->method('addFieldToFilter')->with('entity_id', $id);
         $collection->expects($this->once())->method('addStoreFilter')->with($storeId);
         $collection->expects($this->once())->method('load');

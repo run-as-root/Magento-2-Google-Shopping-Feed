@@ -14,6 +14,7 @@ class AttributeConfigDataList
     private array $list;
 
     /**
+     * @param array<AttributeConfigData> $list
      * @throws InvalidArgumentException
      */
     public function __construct(array $list)

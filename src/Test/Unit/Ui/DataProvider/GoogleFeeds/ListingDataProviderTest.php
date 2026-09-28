@@ -39,7 +39,7 @@ class ListingDataProviderTest extends TestCase
         );
     }
 
-    public function getEmptyDataTest(): void
+    public function testGetEmptyDataTest(): void
     {
         $this->feedRepositoryMock->method('getList')->willReturn([]);
         $expected = [
@@ -50,17 +50,16 @@ class ListingDataProviderTest extends TestCase
         $this->assertEquals($expected, $this->sut->getData());
     }
 
-    public function testGetDataTest()
+    public function testGetDataTest(): void
     {
-        $item = [
-            'filename' => 'base_store_default_feed.xml',
-            'path' => 'media/run_as_root/feed/base_store_default_feed.xml',
-            'link' => 'https://local.magento2.com/media/run_as_root/feed/base_store_default_feed.xml',
-            'last_generated' => date('Y-m-d H:i:s'),
-            'store' => 'default'
-        ];
+        $feedMock = $this->createMock(\RunAsRoot\GoogleShoppingFeed\Api\Data\FeedInterface::class);
+        $feedMock->method('getLink')->willReturn('https://local.magento2.com/media/run_as_root/feed/base_store_default_feed.xml');
 
-        $this->feedRepositoryMock->method('getList')->willReturn([$item]);
-        $this->assertArrayHasKey('link', $this->sut->getData()['items'][0]);
+        $this->feedRepositoryMock->method('getList')->willReturn([$feedMock]);
+        
+        $result = $this->sut->getData();
+        $this->assertCount(1, $result['items']);
+        $this->assertEquals(1, $result['totalRecords']);
+        $this->assertEquals('https://local.magento2.com/media/run_as_root/feed/base_store_default_feed.xml', $result['items'][0]->getLink());
     }
 }

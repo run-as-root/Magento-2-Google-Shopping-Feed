@@ -24,7 +24,8 @@ class AttributeConfigData extends DataObject
 
     public function getAttributeHandler(): ?string
     {
-        return $this->getData(self::ATTRIBUTE_HANDLER);
+        return $this->getData(self::ATTRIBUTE_HANDLER) === null ? null
+            : (string)$this->getData(self::ATTRIBUTE_HANDLER);
     }
 
     public function setAttributeHandler(?string $attributeHandler): void

@@ -14,7 +14,7 @@ use Magento\Framework\Phrase;
 class FileWriter
 {
     private WriteInterface $mediaDirectory;
-    private string $destination;
+    private string $destination = '';
 
     /**
      * @throws FileSystemException

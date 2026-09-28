@@ -22,6 +22,7 @@ class LeastLevelCategoryCollectionProvider
     }
 
     /**
+     * @param array<int> $categoryIds
      * @throws LocalizedException
      */
     public function get(array $categoryIds, int $storeId): CategoryCollection
