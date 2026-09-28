@@ -38,9 +38,16 @@ final class ChildProductParamsProviderTest extends TestCase
             ->with($configurableProduct)
             ->willReturn($productAttributeOptions);
 
-        $product->method('getData')
-            ->withConsecutive([ 'color' ], [ 'size' ], [ 'other_attribute' ])
-            ->willReturnOnConsecutiveCalls(123, 345, null);
+        $invokedCount = $this->exactly(3);
+        $product->expects($invokedCount)
+            ->method('getData')
+            ->willReturnCallback(function ($attribute) use ($invokedCount) {
+                return match ($invokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals('color', $attribute) ?: 123,
+                    2 => $this->assertEquals('size', $attribute) ?: 345,
+                    3 => $this->assertEquals('other_attribute', $attribute) ?: null,
+                };
+            });
 
         $expectedResult = [
             'tec_color' => 123,

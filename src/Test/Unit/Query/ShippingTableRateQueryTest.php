@@ -50,13 +50,20 @@ class ShippingTableRateQueryTest extends TestCase
 
         $conditionName = 'package_value';
         $countries = ['CH', 'DE'];
-        $selectMock->expects($this->exactly(2))
+        
+        $whereInvokedCount = $this->exactly(2);
+        $selectMock->expects($whereInvokedCount)
             ->method('where')
-            ->withConsecutive(
-                ['condition_name = ?', $conditionName],
-                ['dest_country_id in (?)', $countries],
-            )
-            ->willReturnSelf();
+            ->willReturnCallback(function ($condition, $value) use ($conditionName, $countries, $selectMock, $whereInvokedCount) {
+                return match ($whereInvokedCount->numberOfInvocations()) {
+                    1 => $this->assertEquals('condition_name = ?', $condition) 
+                         ?: $this->assertEquals($conditionName, $value) 
+                         ?: $selectMock,
+                    2 => $this->assertEquals('dest_country_id in (?)', $condition) 
+                         ?: $this->assertEquals($countries, $value) 
+                         ?: $selectMock,
+                };
+            });
 
         $this->sut->get($countries, $conditionName);
     }
