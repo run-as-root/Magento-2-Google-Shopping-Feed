@@ -5,6 +5,7 @@
         <run_as_root_product_feed>
             <general>
                 <cron_schedule>0 */2 * * *</cron_schedule>
+                <configurable_export_type>child</configurable_export_type>
             </general>
         </run_as_root_product_feed>
     </default>

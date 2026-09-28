@@ -69,6 +69,21 @@
                     <source_model>RunAsRoot\GoogleShoppingFeed\SourceModel\CategoriesSourceModel</source_model>
                     <can_be_empty>1</can_be_empty>
                 </field>
+                <field id="configurable_export_type"
+                       translate="label"
+                       type="select"
+                       sortOrder="5"
+                       showInDefault="1"
+                       showInStore="1"
+                       showInWebsite="1"
+                       canRestore="1">
+                    <depends>
+                        <field id="run_as_root_product_feed/general/enabled">1</field>
+                    </depends>
+                    <label>Configurable Products Export</label>
+                    <comment>Choose whether to export configurable products themselves or their visible child products only.</comment>
+                    <source_model>RunAsRoot\GoogleShoppingFeed\SourceModel\ConfigurableExportType</source_model>
+                </field>
             </group>
         </section>
     </system>
