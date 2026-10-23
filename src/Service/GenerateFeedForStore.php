@@ -113,9 +113,7 @@ class GenerateFeedForStore
                 }
 
                 $productRows = $this->processProduct($product, $attributesConfigList);
-
-                // phpcs:ignore Magento2.Performance.ForeachArrayMerge.ForeachArrayMerge
-                $rows = array_merge($rows, $productRows);
+                $rows += $productRows;
             }
 
             $currentPage++;

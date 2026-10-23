@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\Service;
 
+use Magento\Bundle\Model\Product\Type as BundleProduct;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -949,6 +950,61 @@ final class GenerateFeedForStoreTest extends TestCase
             ->method('write')
             ->with('xml string')
             ->willReturn(true);
+
+        $this->sut->execute($storeMock);
+    }
+
+    public function testExecuteKeepsFirstRowForProductExportedStandaloneAndThroughBundle(): void
+    {
+        $storeMock = $this->createMock(StoreInterface::class);
+        $storeMock->method('getId')->willReturn('1');
+        $this->configProviderMock->method('isEnabled')->willReturn(true);
+        $this->xmlFileWriterProviderMock->method('get')->willReturn($this->createMock(FileWriter::class));
+        $this->attributesConfigListProviderMock->method('get')->willReturn(new AttributeConfigDataList([]));
+        $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
+
+        $standaloneProduct = $this->createMock(Product::class);
+        $standaloneProduct->method('getId')->willReturn(6);
+        $standaloneProduct->method('getTypeInstance')->willReturn($this->createMock(Simple::class));
+
+        $bundleTypeInstance = $this->createMock(BundleProduct::class);
+        $bundleTypeInstance->method('getChildrenIds')->willReturn([[6 => 6, 7 => 7]]);
+        $bundleProduct = $this->createMock(Product::class);
+        $bundleProduct->method('getId')->willReturn(10);
+        $bundleProduct->method('getTypeInstance')->willReturn($bundleTypeInstance);
+
+        $bundleChildSix = $this->createMock(Product::class);
+        $bundleChildSix->method('getId')->willReturn(6);
+        $bundleChildSix->method('getStatus')->willReturn(Status::STATUS_ENABLED);
+        $bundleChildSeven = $this->createMock(Product::class);
+        $bundleChildSeven->method('getId')->willReturn(7);
+        $bundleChildSeven->method('getStatus')->willReturn(Status::STATUS_ENABLED);
+        $this->productRepositoryMock->method('getById')->willReturnMap([
+            [6, false, null, false, $bundleChildSix],
+            [7, false, null, false, $bundleChildSeven],
+        ]);
+
+        $this->mapperMock->method('map')->willReturnCallback(
+            static fn (Product $product): array => [
+                'id' => $product->getId(),
+                'source' => $product->getTypeInstance() instanceof Simple ? 'standalone' : 'bundle',
+            ]
+        );
+
+        $collectionMock = $this->createMock(ProductCollection::class);
+        $collectionMock->method('getItems')->willReturn([$standaloneProduct, $bundleProduct, $standaloneProduct]);
+        $collectionMock->method('getPageSize')->willReturn(300);
+        $collectionMock->method('getSize')->willReturn(3);
+        $this->productsCollectionProviderMock->method('get')->willReturn($collectionMock);
+
+        $this->arrayToXmlConverterMock
+            ->expects($this->once())
+            ->method('convert')
+            ->with([
+                6 => ['id' => 6, 'source' => 'standalone'],
+                7 => ['id' => 7, 'source' => 'bundle'],
+            ])
+            ->willReturn('xml string');
 
         $this->sut->execute($storeMock);
     }
