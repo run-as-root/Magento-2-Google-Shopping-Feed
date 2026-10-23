@@ -106,4 +106,37 @@ final class ImageLinkProviderTest extends TestCase
 
         $this->assertEquals($productImageLink, $this->sut->get($productMock));
     }
+
+    public function testItShouldFallBackToTheParentImageWhenChildImageIsNoSelection(): void
+    {
+        $productMock = $this->createMock(Product::class);
+        $productMock->method('getImage')->willReturn('no_selection');
+
+        $parentProductMock = $this->createMock(Product::class);
+        $parentProductMock->method('getImage')->willReturn('o/c/parent-product-image.jpg');
+        $this->parentProductProviderMock->method('get')->with($productMock)->willReturn($parentProductMock);
+
+        $productImageLink = 'https://app.default.test/media/catalog/product/o/c/parent-product-image.jpg';
+        $this->productImageUrlProviderMock
+            ->expects($this->once())
+            ->method('get')
+            ->with('o/c/parent-product-image.jpg')
+            ->willReturn($productImageLink);
+
+        $this->assertSame($productImageLink, $this->sut->get($productMock));
+    }
+
+    public function testItShouldReturnEmptyStringWhenChildAndParentImagesAreNoSelection(): void
+    {
+        $productMock = $this->createMock(Product::class);
+        $productMock->method('getImage')->willReturn('no_selection');
+
+        $parentProductMock = $this->createMock(Product::class);
+        $parentProductMock->method('getImage')->willReturn('no_selection');
+        $this->parentProductProviderMock->method('get')->with($productMock)->willReturn($parentProductMock);
+
+        $this->productImageUrlProviderMock->expects($this->never())->method('get');
+
+        $this->assertSame('', $this->sut->get($productMock));
+    }
 }
