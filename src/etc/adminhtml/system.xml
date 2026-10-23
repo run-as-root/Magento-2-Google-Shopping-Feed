@@ -9,7 +9,7 @@
                  showInDefault="1" showInWebsite="1">
             <label>Product Feed Exporter</label>
             <tab>run_as_root</tab>
-            <resource>RunAsRoot_GoogleTagManager::config</resource>
+            <resource>RunAsRoot_GoogleShoppingFeed::google_shopping_feed</resource>
             <group id="general" translate="label" sortOrder="1" showInDefault="1" showInStore="1" showInWebsite="1">
                 <label>General</label>
                 <field id="enabled"
