@@ -6,32 +6,33 @@ namespace RunAsRoot\GoogleShoppingFeed\DataProvider;
 
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Magento\Framework\Pricing\Helper\Data;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 
-use function str_replace;
+use function number_format;
+use function sprintf;
 
 class CurrencyAmountProvider
 {
     private CurrencyProvider $currencyProvider;
-    private Data $priceHelper;
+    private PriceCurrencyInterface $priceCurrency;
 
     public function __construct(
         CurrencyProvider $currencyProvider,
-        Data $priceHelper
+        PriceCurrencyInterface $priceCurrency
     ) {
         $this->currencyProvider = $currencyProvider;
-        $this->priceHelper = $priceHelper;
+        $this->priceCurrency = $priceCurrency;
     }
 
     /**
      * @throws LocalizedException
      * @throws NoSuchEntityException
      */
-    public function get(float $amount, int $storeId)
+    public function get(float $amount, int $storeId): string
     {
-        $price = $this->priceHelper->currencyByStore($amount, $storeId, true, false);
         $currency = $this->currencyProvider->get($storeId);
+        $convertedAmount = $this->priceCurrency->convertAndRound($amount, $storeId, $currency);
 
-        return str_replace($currency->getCurrencySymbol(), $currency->getCode(), $price);
+        return sprintf('%s %s', number_format($convertedAmount, 2, '.', ''), $currency->getCode());
     }
 }

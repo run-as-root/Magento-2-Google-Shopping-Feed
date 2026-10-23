@@ -106,16 +106,16 @@ final class ShippingProviderTest extends TestCase
                 return match ($currencyGetInvokedCount->numberOfInvocations()) {
                     1 => $this->assertEquals(23.68, $amount) 
                          ?: $this->assertEquals($storeId, $storeIdParam) 
-                         ?: '23,68 EUR',
+                         ?: '23.68 EUR',
                     2 => $this->assertEquals(4.95, $amount) 
                          ?: $this->assertEquals($storeId, $storeIdParam) 
-                         ?: '4,95 EUR',
+                         ?: '4.95 EUR',
                 };
             });
 
         $expected = [
-            ['country' => 'CH', 'price' => '23,68 EUR'],
-            ['country' => 'DE', 'price' => '4,95 EUR'],
+            ['country' => 'CH', 'price' => '23.68 EUR'],
+            ['country' => 'DE', 'price' => '4.95 EUR'],
         ];
 
         $this->assertEquals($expected, $this->sut->get($productMock));
