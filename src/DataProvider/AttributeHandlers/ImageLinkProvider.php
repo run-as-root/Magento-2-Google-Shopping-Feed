@@ -11,6 +11,8 @@ use RunAsRoot\GoogleShoppingFeed\DataProvider\ProductImageUrlProvider;
 
 class ImageLinkProvider implements AttributeHandlerInterface
 {
+    private const NO_SELECTION = 'no_selection';
+
     private ParentProductProvider $parentProductProvider;
     private ProductImageUrlProvider $productImageUrlProvider;
     private StoreManagerInterface $storeManager;
@@ -29,16 +31,23 @@ class ImageLinkProvider implements AttributeHandlerInterface
     {
         $this->storeManager->setCurrentStore($product->getStoreId());
 
-        if ($product->getImage()) {
+        if ($this->hasImage($product)) {
             return $this->productImageUrlProvider->get($product->getImage());
         }
 
         $parentProduct = $this->parentProductProvider->get($product);
 
-        if (!$parentProduct->getImage()) {
+        if (!$this->hasImage($parentProduct)) {
             return '';
         }
 
         return $this->productImageUrlProvider->get($parentProduct->getImage());
+    }
+
+    private function hasImage(Product $product): bool
+    {
+        $image = $product->getImage();
+
+        return $image !== null && $image !== '' && $image !== self::NO_SELECTION;
     }
 }
