@@ -25,7 +25,7 @@ class TriggerProductFeedCommand extends Command
     public function __construct(
         State $state,
         GenerateFeedService $generateFeedService,
-        string $name = null
+        ?string $name = null
     ) {
         $this->state = $state;
         $this->generateFeedService = $generateFeedService;
