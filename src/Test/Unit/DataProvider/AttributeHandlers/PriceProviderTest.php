@@ -41,8 +41,8 @@ final class PriceProviderTest extends TestCase
             ->expects($this->once())
             ->method('get')
             ->with(125.55, 1)
-            ->willReturn('125,55 EUR');
+            ->willReturn('125.55 EUR');
 
-        $this->assertEquals('125,55 EUR', $this->sut->get($productMock));
+        $this->assertEquals('125.55 EUR', $this->sut->get($productMock));
     }
 }
