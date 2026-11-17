@@ -49,8 +49,7 @@ class MsiInventoryAdapter implements InventoryAdapterInterface
         foreach ($msiResults as $msiResult) {
             $results[] = new InventorySalableResult(
                 $msiResult->getSku(),
-                $msiResult->isSalable(),
-                $msiResult->getErrors()
+                $msiResult->isSalable()
             );
         }
 
