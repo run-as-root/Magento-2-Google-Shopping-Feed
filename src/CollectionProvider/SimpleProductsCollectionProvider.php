@@ -31,10 +31,10 @@ class SimpleProductsCollectionProvider
             ->addAttributeToFilter('type_id', ['eq' => 'simple'])
             ->addAttributeToFilter('status', ['eq' => self::STATUS_ENABLED])
             ->addCategoriesFilter([ 'in' => $categories ])
-            ->addMediaGalleryData()
             ->addStoreFilter($storeId)
             ->setPageSize(self::BATCH_SIZE)
-            ->setCurPage($page);
+            ->setCurPage($page)
+            ->addMediaGalleryData();
 
         return $collection;
     }
