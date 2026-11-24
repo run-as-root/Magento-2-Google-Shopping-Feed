@@ -22,6 +22,7 @@ use RunAsRoot\GoogleShoppingFeed\Converter\ArrayToXmlConverter;
 use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributesConfigListProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
 use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
 use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
 use RunAsRoot\GoogleShoppingFeed\Exception\WrongInstanceException;
@@ -183,10 +184,10 @@ class GenerateFeedForStore
         $configExportType = $this->configProvider->getConfigurableExportType($storeId);
 
         if ($configExportType === ConfigurableExportType::EXPORT_PARENT_PRODUCTS) {
-            return $this->getConfigurableParentProductRows($product, $attributesConfigList);
+            return $this->getConfigurableParentProductRows($product, $attributesConfigList, $storeId);
         }
 
-        return $this->getConfigurableChildProductRows($product, $attributesConfigList);
+        return $this->getConfigurableChildProductRows($product, $attributesConfigList, $storeId);
     }
 
     /**
@@ -208,16 +209,16 @@ class GenerateFeedForStore
                 continue;
             }
 
-            if ((int)$childProduct->getVisibility() === Visibility::VISIBILITY_NOT_VISIBLE) {
-                continue;
-            }
-
             try {
                 $childProduct = $this->productRepository
                     ->get($childProduct->getSku(), false, $childProduct->getStoreId());
 
                 if (!$childProduct instanceof Product) {
                     throw new \InvalidArgumentException('Expected Product instance');
+                }
+
+                if ((int)$childProduct->getVisibility() === Visibility::VISIBILITY_NOT_VISIBLE) {
+                    continue;
                 }
 
                 $rows[$childProduct->getId()] = $this->productToRowMapper
@@ -291,11 +292,10 @@ class GenerateFeedForStore
      */
     private function getConfigurableParentProductRows(
         Product $product,
-        AttributeConfigDataList $attributesConfigList
+        AttributeConfigDataList $attributesConfigList,
+        int $storeId
     ): array {
-        $typeInstance = $product->getTypeInstance();
-        /** @var Configurable $typeInstance */
-        $childProducts = $typeInstance->getUsedProducts($product);
+        $childProducts = $this->getStoreChildProducts($product, $storeId);
 
         $availableChildren = $this->getAvailableChildProducts(array_map(static function ($product) {
             if (!$product instanceof Product) {
@@ -329,13 +329,12 @@ class GenerateFeedForStore
      */
     private function getConfigurableChildProductRows(
         Product $product,
-        AttributeConfigDataList $attributesConfigList
+        AttributeConfigDataList $attributesConfigList,
+        int $storeId
     ): array {
         /** @var array<int, array<string, mixed>> $rows */
         $rows = [];
-        $typeInstance = $product->getTypeInstance();
-        /** @var Configurable $typeInstance */
-        $childProducts = $typeInstance->getUsedProducts($product);
+        $childProducts = $this->getStoreChildProducts($product, $storeId);
 
         foreach ($childProducts as $childProduct) {
             /** @var Product $childProduct */
@@ -351,6 +350,7 @@ class GenerateFeedForStore
                     throw new \InvalidArgumentException('Expected Product instance');
                 }
 
+                $childProduct->setData(ParentProductProvider::VARIANT_PARENT_ID, (int)$product->getId());
                 $rows[$childProduct->getId()] = $this->productToRowMapper
                     ->map($childProduct, $attributesConfigList);
             } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
@@ -366,6 +366,18 @@ class GenerateFeedForStore
         }
 
         return $rows;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private function getStoreChildProducts(Product $product, int $storeId): array
+    {
+        $typeInstance = $product->getTypeInstance();
+        /** @var Configurable $typeInstance */
+        $typeInstance->setStoreFilter($storeId, $product);
+
+        return $typeInstance->getUsedProducts($product);
     }
 
     /**

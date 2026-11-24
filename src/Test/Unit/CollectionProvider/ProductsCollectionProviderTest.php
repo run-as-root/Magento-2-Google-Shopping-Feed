@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace RunAsRoot\GoogleShoppingFeed\Test\Unit\CollectionProvider;
 
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Framework\DB\Adapter\AdapterInterface;
 use Magento\Framework\DB\Select;
+use Magento\Framework\EntityManager\EntityMetadataInterface;
+use Magento\Framework\EntityManager\MetadataPool;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ExportableConfigurableParentsCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ProductsCollectionProvider;
 
 final class ProductsCollectionProviderTest extends TestCase
@@ -28,7 +32,13 @@ final class ProductsCollectionProviderTest extends TestCase
     private $collectionSelect;
 
     /** @var Select|MockObject */
-    private $configurableChildrenSelect;
+    private $exportableParentsSelect;
+
+    /** @var ExportableConfigurableParentsCollectionProvider|MockObject */
+    private $exportableParentsCollectionProvider;
+
+    /** @var MetadataPool|MockObject */
+    private $metadataPool;
 
     /** @var array<int, array{method: string, arguments: array<int, mixed>}> */
     private array $collectionCalls = [];
@@ -41,7 +51,11 @@ final class ProductsCollectionProviderTest extends TestCase
         $this->collection = $this->createMock(ProductCollection::class);
         $this->connection = $this->createMock(AdapterInterface::class);
         $this->collectionSelect = $this->createMock(Select::class);
-        $this->configurableChildrenSelect = $this->createMock(Select::class);
+        $this->exportableParentsSelect = $this->createMock(Select::class);
+        $this->exportableParentsCollectionProvider = $this->createMock(
+            ExportableConfigurableParentsCollectionProvider::class
+        );
+        $this->metadataPool = $this->createMock(MetadataPool::class);
 
         foreach ([ 'addAttributeToSelect', 'addAttributeToFilter', 'addCategoriesFilter', 'addStoreFilter',
             'setPageSize', 'setCurPage', 'addMediaGalleryData' ] as $method) {
@@ -57,11 +71,23 @@ final class ProductsCollectionProviderTest extends TestCase
         $this->collection->method('getConnection')->willReturn($this->connection);
         $this->collection->method('getSelect')->willReturn($this->collectionSelect);
         $this->collection->method('getTable')->willReturnArgument(0);
-        $this->connection->method('select')->willReturn($this->configurableChildrenSelect);
-        $this->configurableChildrenSelect->method('from')->willReturnSelf();
         $this->productCollectionFactory->method('create')->willReturn($this->collection);
 
-        $this->sut = new ProductsCollectionProvider($this->productCollectionFactory);
+        $exportableParentsCollection = $this->createMock(ProductCollection::class);
+        $exportableParentsCollection->method('getSelect')->willReturn($this->exportableParentsSelect);
+        $this->exportableParentsCollectionProvider->method('get')->willReturn($exportableParentsCollection);
+        $this->exportableParentsSelect->method('reset')->willReturnSelf();
+        $this->exportableParentsSelect->method('join')->willReturnSelf();
+
+        $productMetadata = $this->createMock(EntityMetadataInterface::class);
+        $productMetadata->method('getLinkField')->willReturn('row_id');
+        $this->metadataPool->method('getMetadata')->with(ProductInterface::class)->willReturn($productMetadata);
+
+        $this->sut = new ProductsCollectionProvider(
+            $this->productCollectionFactory,
+            $this->exportableParentsCollectionProvider,
+            $this->metadataPool
+        );
     }
 
     public function testMediaGalleryIsAddedAfterFilteringAndPagination(): void
@@ -91,19 +117,37 @@ final class ProductsCollectionProviderTest extends TestCase
         );
     }
 
-    public function testConfigurableChildrenAreExcluded(): void
+    public function testStoreFilterIsAppliedBeforeAttributeFilters(): void
     {
-        $this->configurableChildrenSelect->expects($this->once())
-            ->method('from')
-            ->with('catalog_product_super_link', 'product_id');
+        $this->sut->get(1, [ 2 ], 1);
+
+        $calledMethods = array_column($this->collectionCalls, 'method');
+        $this->assertSame('addStoreFilter', $calledMethods[0]);
+    }
+
+    public function testChildrenOfExportableConfigurablesInTheStoreAreExcluded(): void
+    {
+        $this->exportableParentsCollectionProvider->expects($this->once())
+            ->method('get')
+            ->with(3);
+        $this->exportableParentsSelect->expects($this->once())
+            ->method('reset')
+            ->with(Select::COLUMNS);
+        $this->exportableParentsSelect->expects($this->once())
+            ->method('join')
+            ->with(
+                [ 'super_link' => 'catalog_product_super_link' ],
+                'super_link.parent_id = e.row_id',
+                [ 'product_id' ]
+            );
         $this->connection->expects($this->once())
             ->method('prepareSqlCondition')
-            ->with('e.entity_id', [ 'nin' => $this->configurableChildrenSelect ])
-            ->willReturn('e.entity_id NOT IN (configurable children)');
+            ->with('e.entity_id', [ 'nin' => $this->exportableParentsSelect ])
+            ->willReturn('e.entity_id NOT IN (children of exportable configurables)');
         $this->collectionSelect->expects($this->once())
             ->method('where')
-            ->with('e.entity_id NOT IN (configurable children)');
+            ->with('e.entity_id NOT IN (children of exportable configurables)');
 
-        $this->sut->get(1, [ 2 ], 1);
+        $this->sut->get(1, [ 2 ], 3);
     }
 }

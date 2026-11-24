@@ -112,8 +112,13 @@ The "Configurables Export" setting controls how configurable products are handle
 
 This setting is configurable per store view to allow different export strategies for different stores.
 
-Children of configurable products are exported only through their parent, so they are exported only when the parent product is enabled and assigned to an exported category.
-All other products, including children of grouped and bundle products, are exported only when they are visible individually (Catalog, Search, or Catalog + Search), because products that are "Not Visible Individually" have no product page to link to.
+A configurable product is an **exportable parent** in a store view when it is enabled, visible individually (Catalog, Search, or Catalog + Search) and assigned to the store view's website.
+
+- Children (simple or virtual) of an exportable parent are exported only through that parent, according to the setting above. They are not exported when the parent itself is not in the feed, for example when it is not assigned to an exported category. The link, `item_group_id` and fallback image come from the parent the child is exported with.
+- Children of configurable products that are not exportable parents are treated like any other product.
+- All other products, including children of grouped and bundle products, are exported only when they are visible individually, because products that are "Not Visible Individually" have no product page to link to. They are linked to their own product page.
+
+Status and visibility are read from the store view value, falling back to the default (All Store Views) value.
 
 
 ## Extensability points

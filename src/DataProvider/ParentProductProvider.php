@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace RunAsRoot\GoogleShoppingFeed\DataProvider;
 
 use Magento\Catalog\Model\Product;
-use Magento\Catalog\Model\Product\Type;
 use Magento\Framework\Exception\NoSuchEntityException;
 use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
 
 class ParentProductProvider
 {
+    public const VARIANT_PARENT_ID = 'run_as_root_feed_variant_parent_id';
+
     private FeedRegistry $registry;
     private ProductProvider $productProvider;
     private ParentProductIdProvider $parentProductIdProvider;
@@ -27,17 +28,13 @@ class ParentProductProvider
 
     public function get(Product $product): Product
     {
-        if ($product->getTypeId() !== Type::TYPE_SIMPLE) {
-            return $product;
-        }
-
-        $parentProductId = $this->parentProductIdProvider->get((int)$product->getId());
+        $storeId = (int)$product->getStoreId();
+        $parentProductId = $this->getParentProductId($product, $storeId);
 
         if ($parentProductId === null) {
             return $product;
         }
 
-        $storeId = (int)$product->getStoreId();
         $parentProductRegistryKey = (string)$parentProductId;
 
         if ($this->registry->registryForStore($parentProductRegistryKey, $storeId) !== null) {
@@ -53,5 +50,16 @@ class ParentProductProvider
         $this->registry->registerForStore($parentProductRegistryKey, $storeId, $productForUrlRetrieval);
 
         return $productForUrlRetrieval;
+    }
+
+    private function getParentProductId(Product $product, int $storeId): ?int
+    {
+        $variantParentId = $product->getData(self::VARIANT_PARENT_ID);
+
+        if ($variantParentId !== null) {
+            return (int)$variantParentId;
+        }
+
+        return $this->parentProductIdProvider->get((int)$product->getId(), $storeId);
     }
 }
