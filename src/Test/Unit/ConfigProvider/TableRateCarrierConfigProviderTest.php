@@ -58,4 +58,31 @@ final class TableRateCarrierConfigProviderTest extends TestCase
 
         $this->assertSame(2.5, $this->sut->getHandlingFee(10));
     }
+
+    public function testIsSpecificCountriesOnly(): void
+    {
+        $this->scopeConfigMock->expects($this->once())
+            ->method('isSetFlag')
+            ->with('carriers/tablerate/sallowspecific', 'store', 10)
+            ->willReturn(true);
+
+        $this->assertTrue($this->sut->isSpecificCountriesOnly(10));
+    }
+
+    public function testGetSpecificCountries(): void
+    {
+        $this->scopeConfigMock->expects($this->once())
+            ->method('getValue')
+            ->with('carriers/tablerate/specificcountry', 'store', 10)
+            ->willReturn('DE,US');
+
+        $this->assertSame(['DE', 'US'], $this->sut->getSpecificCountries(10));
+    }
+
+    public function testGetSpecificCountriesWhenNoneAreSet(): void
+    {
+        $this->scopeConfigMock->method('getValue')->willReturn(null);
+
+        $this->assertSame([], $this->sut->getSpecificCountries(10));
+    }
 }

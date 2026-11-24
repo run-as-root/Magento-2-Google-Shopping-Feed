@@ -131,6 +131,41 @@ final class MatchingTableRatesProviderTest extends TestCase
         );
     }
 
+    public function testGetListsCountryRatesBeforeAnyCountryRates(): void
+    {
+        $tableRates = [
+            $this->createTableRate('0', 0, '*', 0.0, 30.0),
+            $this->createTableRate('0', 2, '*', 0.0, 40.0, 'AK', 'US'),
+            $this->createTableRate('FR', 0, '*', 0.0, 8.0),
+            $this->createTableRate('DE', 0, '*', 0.0, 4.95),
+        ];
+
+        $this->assertSame(
+            [
+                ['country' => 'FR', 'region' => null, 'price' => 8.0],
+                ['country' => 'DE', 'region' => null, 'price' => 4.95],
+                ['country' => 'US', 'region' => null, 'price' => 30.0],
+                ['country' => 'US', 'region' => 'AK', 'price' => 40.0],
+                ['country' => 'CH', 'region' => null, 'price' => 30.0],
+            ],
+            $this->sut->get($tableRates, ['US', 'FR', 'CH', 'DE'], 10.0)
+        );
+    }
+
+    public function testGetFromRateIndexMatchesEachConditionValueAgainstTheSameIndex(): void
+    {
+        $rateIndex = $this->sut->createRateIndex($this->getLumaTableRates(), ['US']);
+
+        $this->assertSame(
+            ['country' => 'US', 'region' => null, 'price' => 15.0],
+            $this->sut->getFromRateIndex($rateIndex, 5.0)[0]
+        );
+        $this->assertSame(
+            ['country' => 'US', 'region' => null, 'price' => 10.0],
+            $this->sut->getFromRateIndex($rateIndex, 99.0)[0]
+        );
+    }
+
     public function testGetPrefersCountryRateOverAnyCountryRegionRate(): void
     {
         $tableRates = [

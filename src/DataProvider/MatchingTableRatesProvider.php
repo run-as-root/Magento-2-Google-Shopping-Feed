@@ -9,6 +9,7 @@ use RunAsRoot\GoogleShoppingFeed\Query\ShippingTableRateQuery;
 use function array_column;
 use function array_diff;
 use function array_filter;
+use function array_merge;
 use function array_unique;
 use function array_values;
 use function asort;
@@ -46,28 +47,64 @@ class MatchingTableRatesProvider
      */
     public function get(array $tableRates, array $countries, float $conditionValue): array
     {
-        $applicableRates = $this->filterApplicableRates($tableRates, $conditionValue);
-        $result = [];
+        return $this->getFromRateIndex($this->createRateIndex($tableRates, $countries), $conditionValue);
+    }
 
-        foreach ($this->getDestinationCountries($applicableRates, $countries) as $countryId) {
-            $countryRate = $this->findRate($applicableRates, $countryId, self::NO_REGION_ID);
+    /**
+     * Groups the rates per destination in the order Magento's table rate carrier prefers them,
+     * so that matching a product only needs the first rate within its condition value.
+     *
+     * @see \Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\RateQuery::prepareSelect()
+     * @param array<array<string, mixed>> $tableRates rows selected by ShippingTableRateQuery
+     * @param string[] $countries
+     * @return array<array{country: string, region_id: int, region: ?string, rates: array<array<string, mixed>>}>
+     */
+    public function createRateIndex(array $tableRates, array $countries): array
+    {
+        $anyZipRates = $this->filterAnyZipRates($tableRates);
+        $rateIndex = [];
 
-            if ($this->isChargeable($countryRate)) {
-                $result[] = $this->createMatchingRate($countryId, null, $countryRate);
-            }
+        foreach ($this->getDestinationCountries($anyZipRates, $countries) as $countryId) {
+            $rateIndex[] = $this->createDestination($anyZipRates, $countryId, self::NO_REGION_ID, null);
 
-            foreach ($this->getRegionCodes($applicableRates, $countryId) as $regionId => $regionCode) {
-                $regionRate = $this->findRate($applicableRates, $countryId, $regionId);
-
-                if (!$this->isChargeable($regionRate) || (int)$regionRate['dest_region_id'] !== $regionId) {
-                    continue;
-                }
-
-                $result[] = $this->createMatchingRate($countryId, $regionCode, $regionRate);
+            foreach ($this->getRegionCodes($anyZipRates, $countryId) as $regionId => $regionCode) {
+                $rateIndex[] = $this->createDestination($anyZipRates, $countryId, $regionId, $regionCode);
             }
         }
 
-        return $result;
+        return $rateIndex;
+    }
+
+    /**
+     * Rates of explicitly listed countries come first, followed by rates applied from rows for any country.
+     *
+     * @param array<array{country: string, region_id: int, region: ?string, rates: array<array<string, mixed>>}> $rateIndex
+     * @return array<array{country: string, region: ?string, price: float}>
+     */
+    public function getFromRateIndex(array $rateIndex, float $conditionValue): array
+    {
+        $roundedConditionValue = round($conditionValue, 4);
+        $countryRates = [];
+        $anyCountryRates = [];
+
+        foreach ($rateIndex as $destination) {
+            $rate = $this->findFirstRateWithin($destination['rates'], $roundedConditionValue);
+
+            if (!$this->isChargeable($rate) || (int)$rate['dest_region_id'] !== $destination['region_id']) {
+                continue;
+            }
+
+            $matchingRate = $this->createMatchingRate($destination['country'], $destination['region'], $rate);
+
+            if ($rate['dest_country_id'] === ShippingTableRateQuery::ANY_COUNTRY_ID) {
+                $anyCountryRates[] = $matchingRate;
+                continue;
+            }
+
+            $countryRates[] = $matchingRate;
+        }
+
+        return array_merge($countryRates, $anyCountryRates);
     }
 
     /**
@@ -83,17 +120,11 @@ class MatchingTableRatesProvider
      * @param array<array<string, mixed>> $tableRates
      * @return array<array<string, mixed>>
      */
-    private function filterApplicableRates(array $tableRates, float $conditionValue): array
+    private function filterAnyZipRates(array $tableRates): array
     {
-        $roundedConditionValue = round($conditionValue, 4);
-
         return array_values(array_filter(
             $tableRates,
-            static function (array $tableRate) use ($roundedConditionValue): bool {
-                if ((float)$tableRate['condition_value'] > $roundedConditionValue) {
-                    return false;
-                }
-
+            static function (array $tableRate): bool {
                 if ($tableRate['dest_zip'] === self::ANY_ZIP) {
                     return true;
                 }
@@ -102,6 +133,21 @@ class MatchingTableRatesProvider
                     && $tableRate['dest_country_id'] !== ShippingTableRateQuery::ANY_COUNTRY_ID;
             }
         ));
+    }
+
+    /**
+     * @param array<array<string, mixed>> $sortedRates
+     * @return array<string, mixed>|null
+     */
+    private function findFirstRateWithin(array $sortedRates, float $conditionValue): ?array
+    {
+        foreach ($sortedRates as $rate) {
+            if ((float)$rate['condition_value'] <= $conditionValue) {
+                return $rate;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -149,15 +195,12 @@ class MatchingTableRatesProvider
     }
 
     /**
-     * Mirrors the destination matching and ordering of Magento's table rate carrier.
-     *
-     * @see \Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\RateQuery::prepareSelect()
      * @param array<array<string, mixed>> $tableRates
-     * @return array<string, mixed>|null
+     * @return array{country: string, region_id: int, region: ?string, rates: array<array<string, mixed>>}
      */
-    private function findRate(array $tableRates, string $countryId, int $regionId): ?array
+    private function createDestination(array $tableRates, string $countryId, int $regionId, ?string $regionCode): array
     {
-        $candidates = array_values(array_filter(
+        $rates = array_values(array_filter(
             $tableRates,
             function (array $tableRate) use ($countryId, $regionId): bool {
                 $rateRegionId = (int)$tableRate['dest_region_id'];
@@ -167,14 +210,14 @@ class MatchingTableRatesProvider
             }
         ));
 
-        usort($candidates, static function (array $left, array $right): int {
+        usort($rates, static function (array $left, array $right): int {
             return strcmp((string)$right['dest_country_id'], (string)$left['dest_country_id'])
                 ?: (int)$right['dest_region_id'] <=> (int)$left['dest_region_id']
                 ?: strcmp((string)$right['dest_zip'], (string)$left['dest_zip'])
                 ?: (float)$right['condition_value'] <=> (float)$left['condition_value'];
         });
 
-        return $candidates[0] ?? null;
+        return [ 'country' => $countryId, 'region_id' => $regionId, 'region' => $regionCode, 'rates' => $rates ];
     }
 
     /**
