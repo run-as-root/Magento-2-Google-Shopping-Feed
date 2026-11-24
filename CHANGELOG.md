@@ -13,7 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - `g:price` contains the regular price instead of the discounted final price, so Google can show the sale (#36)
 - Catalog price rules were ignored when the feed was generated from the CLI command or cron (#36)
-- Configurable parent products no longer take their price from the storefront price renderer, which could add display tax adjustments and convert a non-base currency twice; they use the regular and final price of their cheapest available child (#36)
+- Configurable parent products no longer take their price from the storefront price renderer, which could add display tax adjustments and convert a non-base currency twice; they use the regular and final price of their cheapest salable child (#36)
+
+### Changed
+- `PriceProvider` has a new required constructor argument `ProductPricesProvider`. Only classes that extend `PriceProvider` and call its constructor need to be updated (#36)
 
 ### Deprecated
 - The unused `RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SpecialPriceProvider` virtual type; use `SalePriceProvider` (#36)

@@ -12,10 +12,15 @@ use RunAsRoot\GoogleShoppingFeed\DataProvider\ProductPricesProvider;
 
 class SalePriceProvider implements AttributeHandlerInterface
 {
+    private ProductPricesProvider $productPricesProvider;
+    private CurrencyAmountProvider $currencyAmountProvider;
+
     public function __construct(
-        private readonly ProductPricesProvider $productPricesProvider,
-        private readonly CurrencyAmountProvider $currencyAmountProvider
+        ProductPricesProvider $productPricesProvider,
+        CurrencyAmountProvider $currencyAmountProvider
     ) {
+        $this->productPricesProvider = $productPricesProvider;
+        $this->currencyAmountProvider = $currencyAmountProvider;
     }
 
     /**
@@ -26,10 +31,14 @@ class SalePriceProvider implements AttributeHandlerInterface
     {
         $prices = $this->productPricesProvider->get($product);
 
-        if (round($prices->getFinalPrice(), 2) >= round($prices->getRegularPrice(), 2)) {
+        if ($prices->getFinalPrice() >= $prices->getRegularPrice()) {
             return '';
         }
 
-        return $this->currencyAmountProvider->get($prices->getFinalPrice(), (int)$product->getStoreId());
+        $storeId = (int)$product->getStoreId();
+        $salePrice = $this->currencyAmountProvider->get($prices->getFinalPrice(), $storeId);
+        $regularPrice = $this->currencyAmountProvider->get($prices->getRegularPrice(), $storeId);
+
+        return $salePrice === $regularPrice ? '' : $salePrice;
     }
 }

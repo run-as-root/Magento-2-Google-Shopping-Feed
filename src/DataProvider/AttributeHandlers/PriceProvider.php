@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers;
 
 use Magento\Catalog\Model\Product;
-use Magento\Framework\App\ObjectManager;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\CurrencyAmountProvider;
@@ -18,11 +17,10 @@ class PriceProvider implements AttributeHandlerInterface
 
     public function __construct(
         CurrencyAmountProvider $currencyAmountProvider,
-        ?ProductPricesProvider $productPricesProvider = null
+        ProductPricesProvider $productPricesProvider
     ) {
         $this->currencyAmountProvider = $currencyAmountProvider;
-        $this->productPricesProvider = $productPricesProvider
-            ?? ObjectManager::getInstance()->get(ProductPricesProvider::class);
+        $this->productPricesProvider = $productPricesProvider;
     }
 
     /**

@@ -6,10 +6,13 @@ namespace RunAsRoot\GoogleShoppingFeed\Data;
 
 class ProductPricesData
 {
-    public function __construct(
-        private readonly float $regularPrice,
-        private readonly float $finalPrice
-    ) {
+    private float $regularPrice;
+    private float $finalPrice;
+
+    public function __construct(float $regularPrice, float $finalPrice)
+    {
+        $this->regularPrice = $regularPrice;
+        $this->finalPrice = $finalPrice;
     }
 
     public function getRegularPrice(): float
