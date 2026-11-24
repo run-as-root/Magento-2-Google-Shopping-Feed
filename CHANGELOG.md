@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Shipping: each product now gets the single table rate that checkout would charge for it (matched by final price, weight or quantity against the condition value, including the handling fee), per country and per region via `<g:region>`, instead of every `shipping_tablerate` row. Rows of other websites, ZIP-specific rows and region rows of countries without ISO 3166-2 region codes are skipped. No shipping is exported when the table rate carrier is disabled (#35)
+
 ## [1.1.0] - 2024-07-27
 
 ### Added

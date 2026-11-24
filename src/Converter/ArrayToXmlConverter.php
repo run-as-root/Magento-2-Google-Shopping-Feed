@@ -140,6 +140,7 @@ XML;
             $shipping .= "
             <g:shipping>
                 <g:country><![CDATA[{$data['country']}]]></g:country>
+                {$this->getOptionalProductAttr($data, 'region')}
                 <g:price><![CDATA[{$data['price']}]]></g:price>
              </g:shipping>
             ";

@@ -9,6 +9,8 @@ use Magento\Framework\DB\Select;
 
 class ShippingTableRateQuery
 {
+    public const ANY_COUNTRY_ID = '0';
+
     private ResourceConnection $resourceConnection;
 
     public function __construct(ResourceConnection $resourceConnection)
@@ -16,16 +18,28 @@ class ShippingTableRateQuery
         $this->resourceConnection = $resourceConnection;
     }
 
-    public function get(array $countries, string $conditionName): Select
+    /**
+     * @param string[] $countries
+     */
+    public function get(array $countries, string $conditionName, ?int $websiteId = null): Select
     {
         $select = $this->resourceConnection
             ->getConnection()
             ->select()
-            ->from($this->resourceConnection->getTableName('shipping_tablerate'))
-            ->where('condition_name = ?', $conditionName);
+            ->from([ 'tablerate' => $this->resourceConnection->getTableName('shipping_tablerate') ])
+            ->joinLeft(
+                [ 'region' => $this->resourceConnection->getTableName('directory_country_region') ],
+                'region.region_id = tablerate.dest_region_id',
+                [ 'region_code' => 'region.code', 'region_country_id' => 'region.country_id' ]
+            )
+            ->where('tablerate.condition_name = ?', $conditionName);
+
+        if ($websiteId !== null) {
+            $select->where('tablerate.website_id = ?', $websiteId);
+        }
 
         if (!empty($countries)) {
-            $select->where('dest_country_id in (?)', $countries);
+            $select->where('tablerate.dest_country_id in (?)', [ ...$countries, self::ANY_COUNTRY_ID ]);
         }
 
         return $select;

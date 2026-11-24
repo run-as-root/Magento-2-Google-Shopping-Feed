@@ -113,13 +113,20 @@ The "Configurables Export" setting controls how configurable products are handle
 This setting is configurable per store view to allow different export strategies for different stores.
 
 
+## Shipping
+The `shipping` attribute is exported from the Magento table rate carrier (`Stores > Configuration > Sales > Delivery Methods > Table Rates`):
+* Nothing is exported when the table rate carrier is disabled.
+* Each product gets the rate that checkout charges for a cart holding only that product: the table rate row with the highest condition value up to the product's final price (`package_value`, `package_value_with_discount`), weight (`package_weight`) or a quantity of 1 (`package_qty`), plus the configured handling fee. Only rows of the store's website are used.
+* One `<g:shipping>` is exported per allowed country, plus one with `<g:region>` per region that has its own rate. Regions are exported only for countries whose Magento region codes are ISO 3166-2 codes (AU, BE, BR, CA, CH, MX, RO, US); region rows of other countries are skipped and the country rate applies. Rows for specific ZIP codes are skipped. Rows for all countries (`*`) apply to every allowed country, with lower priority than country rows, as in checkout.
+* This is a single-item cart estimate and Google uses it instead of the account shipping settings. If shipping depends on the cart total or weight of multi-item orders, consider leaving the `shipping` attribute out and setting up order-price or weight-based rates in the Merchant Center account shipping settings instead.
+
 ## Extensability points
 ### Add new attribute to feed
 1. Create new attribute data provider. @see interface `\RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AttributeHandlerInterface`.
 2. Add configuration for new attribute in `\RunAsRoot\GoogleShoppingFeed\Enum\AttributesToImportEnumInterface::ATTRIBUTES`.
 
 ### Use a custom shipping data source
-The `shipping` attribute only reads the `shipping_tablerate` table. To feed shipping costs from another source (Colissimo, GLS, ...), add a DI `<preference>` for `\RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ShippingProvider` pointing to your own class implementing `AttributeHandlerInterface`. Its `get(Product $product)` must return a list of `['country' => 'DE', 'price' => '12.00 EUR']` entries.
+The `shipping` attribute only reads the `shipping_tablerate` table. To feed shipping costs from another source (Colissimo, GLS, ...), add a DI `<preference>` for `\RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ShippingProvider` pointing to your own class implementing `AttributeHandlerInterface`. Its `get(Product $product)` must return a list of `['country' => 'DE', 'price' => '12.00 EUR']` entries, optionally with a `'region' => 'BY'` key (ISO 3166-2 subdivision code without the country prefix), which is exported as `<g:region>`.
 
 ## Google Shopping Feeds Grid
 Generated feeds could be reviewed inside Admin Backoffice
