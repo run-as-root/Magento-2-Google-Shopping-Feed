@@ -16,6 +16,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Store\Api\Data\StoreInterface;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ConfigurableChildrenCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ProductsCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
 use RunAsRoot\GoogleShoppingFeed\Converter\ArrayToXmlConverter;
@@ -42,6 +43,7 @@ class GenerateFeedForStore
     private AllowedCategoryIdsProvider $allowedCategoryIdsProvider;
     private ArrayToXmlConverter $arrayToXmlConverter;
     private ProductRepositoryInterface $productRepository;
+    private ConfigurableChildrenCollectionProvider $configurableChildrenCollectionProvider;
 
     public function __construct(
         FeedConfigProvider $configProvider,
@@ -51,7 +53,8 @@ class GenerateFeedForStore
         ProductsCollectionProvider $productsCollectionProvider,
         AllowedCategoryIdsProvider $allowedCategoryIdsProvider,
         ArrayToXmlConverter $arrayToXmlConverter,
-        ProductRepositoryInterface $productRepository
+        ProductRepositoryInterface $productRepository,
+        ConfigurableChildrenCollectionProvider $configurableChildrenCollectionProvider
     ) {
         $this->configProvider = $configProvider;
         $this->attributesConfigListProvider = $attributesConfigListProvider;
@@ -61,6 +64,7 @@ class GenerateFeedForStore
         $this->allowedCategoryIdsProvider = $allowedCategoryIdsProvider;
         $this->arrayToXmlConverter = $arrayToXmlConverter;
         $this->productRepository = $productRepository;
+        $this->configurableChildrenCollectionProvider = $configurableChildrenCollectionProvider;
     }
 
     /**
@@ -334,18 +338,16 @@ class GenerateFeedForStore
     ): array {
         /** @var array<int, array<string, mixed>> $rows */
         $rows = [];
-        $childProducts = $this->getStoreChildProducts($product, $storeId);
+        $enabledChildIds = $this->getEnabledChildIds($product, $storeId);
+
+        if ($enabledChildIds === []) {
+            return $rows;
+        }
+
+        $childProducts = $this->configurableChildrenCollectionProvider->get($enabledChildIds, $storeId)->getItems();
 
         foreach ($childProducts as $childProduct) {
-            /** @var Product $childProduct */
-            if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
-                continue;
-            }
-
             try {
-                $childProduct = $this->productRepository
-                    ->get($childProduct->getSku(), false, $childProduct->getStoreId());
-
                 if (!$childProduct instanceof Product) {
                     throw new \InvalidArgumentException('Expected Product instance');
                 }
@@ -383,6 +385,25 @@ class GenerateFeedForStore
         } finally {
             $childProduct->unsetData(ParentProductProvider::VARIANT_PARENT_ID);
         }
+    }
+
+    /**
+     * @return array<int>
+     */
+    private function getEnabledChildIds(Product $product, int $storeId): array
+    {
+        $enabledChildIds = [];
+
+        foreach ($this->getStoreChildProducts($product, $storeId) as $childProduct) {
+            /** @var Product $childProduct */
+            if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
+                continue;
+            }
+
+            $enabledChildIds[] = (int)$childProduct->getId();
+        }
+
+        return $enabledChildIds;
     }
 
     /**

@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - "Only Parent Products" mode exports only the configurable product, no longer its children (#34)
 - A configurable product counts as a parent only when it is enabled, visible individually and assigned to the store view's website. Children of other configurable products are exported as standalone products when they are visible individually, with their own link and `item_group_id` (#34)
 - `ParentProductIdProvider::get()` accepts an optional store ID and then returns the lowest ID among the child's exportable parents in that store instead of the first parent found. `ProductsCollectionProvider` and `ParentProductIdProvider` have a new constructor dependency, `ExportableConfigurableParentsCollectionProvider` (#34)
+- Children of a configurable product are loaded with one collection query per parent instead of one product load per child. `GenerateFeedForStore` has a new constructor dependency, `ConfigurableChildrenCollectionProvider` (#34)
 
 ### Fixed
 - Products that are "Not Visible Individually" and are not children of a configurable product (standalone simple products, children of grouped and bundle products) are no longer exported with a link to a page that does not exist (#3, #34)

@@ -17,6 +17,7 @@ use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Store\Api\Data\StoreInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ConfigurableChildrenCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ProductsCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
 use RunAsRoot\GoogleShoppingFeed\Converter\ArrayToXmlConverter;
@@ -58,6 +59,9 @@ final class GenerateFeedForStoreTest extends TestCase
     /** @var ProductRepositoryInterface|MockObject */
     private $productRepositoryMock;
 
+    /** @var ConfigurableChildrenCollectionProvider|MockObject */
+    private $configurableChildrenCollectionProviderMock;
+
     private GenerateFeedForStore $sut;
 
     protected function setUp(): void
@@ -70,6 +74,9 @@ final class GenerateFeedForStoreTest extends TestCase
         $this->allowedCategoryIdsProviderMock = $this->createMock(AllowedCategoryIdsProvider::class);
         $this->arrayToXmlConverterMock = $this->createMock(ArrayToXmlConverter::class);
         $this->productRepositoryMock = $this->createMock(ProductRepositoryInterface::class);
+        $this->configurableChildrenCollectionProviderMock = $this->createMock(
+            ConfigurableChildrenCollectionProvider::class
+        );
 
         $this->sut = new GenerateFeedForStore(
             $this->configProviderMock,
@@ -79,7 +86,8 @@ final class GenerateFeedForStoreTest extends TestCase
             $this->productsCollectionProviderMock,
             $this->allowedCategoryIdsProviderMock,
             $this->arrayToXmlConverterMock,
-            $this->productRepositoryMock
+            $this->productRepositoryMock,
+            $this->configurableChildrenCollectionProviderMock
         );
     }
 
@@ -381,13 +389,7 @@ final class GenerateFeedForStoreTest extends TestCase
         $visibleChildProduct->expects($this->once())
             ->method('getStatus')
             ->willReturn(Status::STATUS_ENABLED);
-        $visibleChildProduct->expects($this->once())
-            ->method('getSku')
-            ->willReturn('visible-child-sku');
-        $visibleChildProduct->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn($storeId);
-        $visibleChildProduct->expects($this->once())
+        $visibleChildProduct->expects($this->atLeastOnce())
             ->method('getId')
             ->willReturn(2);
 
@@ -396,10 +398,14 @@ final class GenerateFeedForStoreTest extends TestCase
             ->with($configurableProduct)
             ->willReturn([$visibleChildProduct]);
 
-        $this->productRepositoryMock->expects($this->once())
+        $childCollectionMock = $this->createMock(ProductCollection::class);
+        $childCollectionMock->expects($this->once())
+            ->method('getItems')
+            ->willReturn([2 => $visibleChildProduct]);
+        $this->configurableChildrenCollectionProviderMock->expects($this->once())
             ->method('get')
-            ->with('visible-child-sku', false, $storeId)
-            ->willReturn($visibleChildProduct);
+            ->with([2], (int)$storeId)
+            ->willReturn($childCollectionMock);
 
         $productItems = [$configurableProduct];
 
@@ -668,8 +674,6 @@ final class GenerateFeedForStoreTest extends TestCase
 
         $notVisibleChildProduct = $this->createMock(Product::class);
         $notVisibleChildProduct->method('getId')->willReturn(2);
-        $notVisibleChildProduct->method('getSku')->willReturn('not-visible-child-sku');
-        $notVisibleChildProduct->method('getStoreId')->willReturn(1);
         $notVisibleChildProduct->method('getStatus')->willReturn(Status::STATUS_ENABLED);
         $notVisibleChildProduct->method('getVisibility')->willReturn(Visibility::VISIBILITY_NOT_VISIBLE);
 
@@ -680,10 +684,12 @@ final class GenerateFeedForStoreTest extends TestCase
         $configurableProduct->method('getStoreId')->willReturn(1);
         $configurableProduct->method('getTypeInstance')->willReturn($configurableTypeInstance);
 
-        $this->productRepositoryMock->expects($this->once())
+        $childCollectionMock = $this->createMock(ProductCollection::class);
+        $childCollectionMock->method('getItems')->willReturn([ 2 => $notVisibleChildProduct ]);
+        $this->configurableChildrenCollectionProviderMock->expects($this->once())
             ->method('get')
-            ->with('not-visible-child-sku', false, 1)
-            ->willReturn($notVisibleChildProduct);
+            ->with([ 2 ], 1)
+            ->willReturn($childCollectionMock);
         $this->mapperMock->method('map')->willReturnCallback(
             static fn (Product $product): array => [ 'id' => $product->getId() ]
         );
@@ -785,7 +791,7 @@ final class GenerateFeedForStoreTest extends TestCase
 
         $this->mapperMock->expects($this->never())->method('map');
 
-        $this->productRepositoryMock->expects($this->never())->method('get');
+        $this->configurableChildrenCollectionProviderMock->expects($this->never())->method('get');
 
         $this->arrayToXmlConverterMock
             ->expects($this->once())
@@ -1057,8 +1063,7 @@ final class GenerateFeedForStoreTest extends TestCase
         $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
 
         $usedChildProduct = $this->createMock(Product::class);
-        $usedChildProduct->method('getSku')->willReturn('child-sku');
-        $usedChildProduct->method('getStoreId')->willReturn(2);
+        $usedChildProduct->method('getId')->willReturn(11);
         $usedChildProduct->method('getStatus')->willReturn(Status::STATUS_ENABLED);
 
         $configurableTypeInstance = $this->createMock(Configurable::class);
@@ -1079,7 +1084,12 @@ final class GenerateFeedForStoreTest extends TestCase
         $loadedChildProduct->expects($this->once())
             ->method('unsetData')
             ->with(ParentProductProvider::VARIANT_PARENT_ID);
-        $this->productRepositoryMock->method('get')->with('child-sku', false, 2)->willReturn($loadedChildProduct);
+        $childCollectionMock = $this->createMock(ProductCollection::class);
+        $childCollectionMock->method('getItems')->willReturn([ 11 => $loadedChildProduct ]);
+        $this->configurableChildrenCollectionProviderMock->expects($this->once())
+            ->method('get')
+            ->with([ 11 ], 2)
+            ->willReturn($childCollectionMock);
         $this->mapperMock->method('map')->willReturn([ 'id' => 11 ]);
 
         $collectionMock = $this->createMock(ProductCollection::class);
@@ -1147,7 +1157,7 @@ final class GenerateFeedForStoreTest extends TestCase
         $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
 
         $usedChildProduct = $this->createMock(Product::class);
-        $usedChildProduct->method('getSku')->willReturn('child-sku');
+        $usedChildProduct->method('getId')->willReturn(11);
         $usedChildProduct->method('getStatus')->willReturn(Status::STATUS_ENABLED);
         $configurableTypeInstance = $this->createMock(Configurable::class);
         $configurableTypeInstance->method('getUsedProducts')->willReturn([ $usedChildProduct ]);
@@ -1158,7 +1168,9 @@ final class GenerateFeedForStoreTest extends TestCase
 
         $loadedChildProduct = $this->createPartialMock(Product::class, [ 'getId' ]);
         $loadedChildProduct->method('getId')->willReturn(11);
-        $this->productRepositoryMock->method('get')->willReturn($loadedChildProduct);
+        $childCollectionMock = $this->createMock(ProductCollection::class);
+        $childCollectionMock->method('getItems')->willReturn([ 11 => $loadedChildProduct ]);
+        $this->configurableChildrenCollectionProviderMock->method('get')->willReturn($childCollectionMock);
         $this->mapperMock->method('map')->willReturnCallback(
             static function (Product $product): array {
                 self::assertSame(10, $product->getData(ParentProductProvider::VARIANT_PARENT_ID));
