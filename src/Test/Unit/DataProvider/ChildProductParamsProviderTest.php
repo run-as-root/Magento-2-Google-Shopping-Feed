@@ -80,4 +80,18 @@ final class ChildProductParamsProviderTest extends TestCase
         $result = $this->sut->get($product, $configurableProduct);
         $this->assertEquals($expectedResult, $result);
     }
+
+    public function testGetForVirtualChildProduct(): void
+    {
+        $product = $this->createMock(Product::class);
+        $product->method('getTypeId')->willReturn(Type::TYPE_VIRTUAL);
+        $product->method('getData')->with('color')->willReturn(123);
+        $configurableProduct = $this->createMock(Product::class);
+        $configurableProduct->method('getTypeId')->willReturn(Configurable::TYPE_CODE);
+        $this->configurableAttrsProvider->method('get')
+            ->with($configurableProduct)
+            ->willReturn([ [ 'attribute_code' => 'color' ] ]);
+
+        $this->assertEquals([ 'tec_color' => 123 ], $this->sut->get($product, $configurableProduct));
+    }
 }

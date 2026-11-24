@@ -10,25 +10,30 @@ use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Framework\DB\Select;
 use Magento\Framework\EntityManager\MetadataPool;
+use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
 
 class ProductsCollectionProvider
 {
     public const BATCH_SIZE = 50;
     private const STATUS_ENABLED = 1;
     private const CONFIGURABLE_LINK_TABLE = 'catalog_product_super_link';
+    private const EXCLUDED_CHILD_IDS_REGISTRY_KEY = 'exportable_configurable_child_ids';
 
     private ProductCollectionFactory $productCollectionFactory;
     private ExportableConfigurableParentsCollectionProvider $exportableConfigurableParentsCollectionProvider;
     private MetadataPool $metadataPool;
+    private FeedRegistry $registry;
 
     public function __construct(
         ProductCollectionFactory $productCollectionFactory,
         ExportableConfigurableParentsCollectionProvider $exportableConfigurableParentsCollectionProvider,
-        MetadataPool $metadataPool
+        MetadataPool $metadataPool,
+        FeedRegistry $registry
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->exportableConfigurableParentsCollectionProvider = $exportableConfigurableParentsCollectionProvider;
         $this->metadataPool = $metadataPool;
+        $this->registry = $registry;
     }
 
     /**
@@ -59,6 +64,27 @@ class ProductsCollectionProvider
      */
     private function excludeChildrenOfExportableConfigurables(ProductCollection $collection, int $storeId): void
     {
+        $childIds = $this->getChildIdsOfExportableConfigurables($collection, $storeId);
+
+        if ($childIds === []) {
+            return;
+        }
+
+        $collection->addIdFilter($childIds, true);
+    }
+
+    /**
+     * @return array<int>
+     * @throws \Exception
+     */
+    private function getChildIdsOfExportableConfigurables(ProductCollection $collection, int $storeId): array
+    {
+        $childIds = $this->registry->registryForStore(self::EXCLUDED_CHILD_IDS_REGISTRY_KEY, $storeId);
+
+        if (is_array($childIds)) {
+            return $childIds;
+        }
+
         $linkField = $this->metadataPool->getMetadata(ProductInterface::class)->getLinkField();
         $childrenSelect = $this->exportableConfigurableParentsCollectionProvider->get($storeId)->getSelect();
         $childrenSelect->reset(Select::COLUMNS)
@@ -66,10 +92,12 @@ class ProductsCollectionProvider
                 [ 'super_link' => $collection->getTable(self::CONFIGURABLE_LINK_TABLE) ],
                 'super_link.parent_id = e.' . $linkField,
                 [ 'product_id' ]
-            );
+            )
+            ->distinct();
 
-        $collection->getSelect()->where(
-            $collection->getConnection()->prepareSqlCondition('e.entity_id', [ 'nin' => $childrenSelect ])
-        );
+        $childIds = array_map('intval', $collection->getConnection()->fetchCol($childrenSelect));
+        $this->registry->registerForStore(self::EXCLUDED_CHILD_IDS_REGISTRY_KEY, $storeId, $childIds);
+
+        return $childIds;
     }
 }

@@ -16,6 +16,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ExportableConfigurableParentsCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ProductsCollectionProvider;
+use RunAsRoot\GoogleShoppingFeed\Registry\FeedRegistry;
 
 final class ProductsCollectionProviderTest extends TestCase
 {
@@ -58,7 +59,7 @@ final class ProductsCollectionProviderTest extends TestCase
         $this->metadataPool = $this->createMock(MetadataPool::class);
 
         foreach ([ 'addAttributeToSelect', 'addAttributeToFilter', 'addCategoriesFilter', 'addStoreFilter',
-            'setPageSize', 'setCurPage', 'addMediaGalleryData' ] as $method) {
+            'setPageSize', 'setCurPage', 'addMediaGalleryData', 'addIdFilter' ] as $method) {
             $this->collection->method($method)->willReturnCallback(
                 function (...$arguments) use ($method) {
                     $this->collectionCalls[] = [ 'method' => $method, 'arguments' => $arguments ];
@@ -78,6 +79,7 @@ final class ProductsCollectionProviderTest extends TestCase
         $this->exportableParentsCollectionProvider->method('get')->willReturn($exportableParentsCollection);
         $this->exportableParentsSelect->method('reset')->willReturnSelf();
         $this->exportableParentsSelect->method('join')->willReturnSelf();
+        $this->exportableParentsSelect->method('distinct')->willReturnSelf();
 
         $productMetadata = $this->createMock(EntityMetadataInterface::class);
         $productMetadata->method('getLinkField')->willReturn('row_id');
@@ -86,12 +88,15 @@ final class ProductsCollectionProviderTest extends TestCase
         $this->sut = new ProductsCollectionProvider(
             $this->productCollectionFactory,
             $this->exportableParentsCollectionProvider,
-            $this->metadataPool
+            $this->metadataPool,
+            new FeedRegistry()
         );
     }
 
     public function testMediaGalleryIsAddedAfterFilteringAndPagination(): void
     {
+        $this->connection->method('fetchCol')->willReturn([]);
+
         $this->sut->get(2, [ 1, 2, 3 ], 1);
 
         $calledMethods = array_column($this->collectionCalls, 'method');
@@ -101,6 +106,8 @@ final class ProductsCollectionProviderTest extends TestCase
 
     public function testNotVisibleIndividuallyProductsAreExcluded(): void
     {
+        $this->connection->method('fetchCol')->willReturn([]);
+
         $this->sut->get(1, [ 2 ], 1);
 
         $attributeFilters = array_map(
@@ -119,6 +126,8 @@ final class ProductsCollectionProviderTest extends TestCase
 
     public function testStoreFilterIsAppliedBeforeAttributeFilters(): void
     {
+        $this->connection->method('fetchCol')->willReturn([]);
+
         $this->sut->get(1, [ 2 ], 1);
 
         $calledMethods = array_column($this->collectionCalls, 'method');
@@ -141,13 +150,35 @@ final class ProductsCollectionProviderTest extends TestCase
                 [ 'product_id' ]
             );
         $this->connection->expects($this->once())
-            ->method('prepareSqlCondition')
-            ->with('e.entity_id', [ 'nin' => $this->exportableParentsSelect ])
-            ->willReturn('e.entity_id NOT IN (children of exportable configurables)');
-        $this->collectionSelect->expects($this->once())
-            ->method('where')
-            ->with('e.entity_id NOT IN (children of exportable configurables)');
+            ->method('fetchCol')
+            ->with($this->exportableParentsSelect)
+            ->willReturn([ '47', '48' ]);
 
         $this->sut->get(1, [ 2 ], 3);
+
+        $this->assertContains(
+            [ 'method' => 'addIdFilter', 'arguments' => [ [ 47, 48 ], true ] ],
+            $this->collectionCalls
+        );
+    }
+
+    public function testChildIdsAreQueriedOncePerStore(): void
+    {
+        $this->connection->expects($this->exactly(2))
+            ->method('fetchCol')
+            ->willReturn([ '47' ]);
+
+        $this->sut->get(1, [ 2 ], 3);
+        $this->sut->get(2, [ 2 ], 3);
+        $this->sut->get(1, [ 2 ], 4);
+    }
+
+    public function testNoIdFilterIsAddedWithoutChildrenToExclude(): void
+    {
+        $this->connection->method('fetchCol')->willReturn([]);
+
+        $this->sut->get(1, [ 2 ], 3);
+
+        $this->assertNotContains('addIdFilter', array_column($this->collectionCalls, 'method'));
     }
 }

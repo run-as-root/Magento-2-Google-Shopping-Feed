@@ -211,7 +211,7 @@ class GenerateFeedForStore
 
             try {
                 $childProduct = $this->productRepository
-                    ->get($childProduct->getSku(), false, $childProduct->getStoreId());
+                    ->get($childProduct->getSku(), false, $product->getStoreId());
 
                 if (!$childProduct instanceof Product) {
                     throw new \InvalidArgumentException('Expected Product instance');
@@ -350,9 +350,7 @@ class GenerateFeedForStore
                     throw new \InvalidArgumentException('Expected Product instance');
                 }
 
-                $childProduct->setData(ParentProductProvider::VARIANT_PARENT_ID, (int)$product->getId());
-                $rows[$childProduct->getId()] = $this->productToRowMapper
-                    ->map($childProduct, $attributesConfigList);
+                $rows[$childProduct->getId()] = $this->mapVariantRow($childProduct, $product, $attributesConfigList);
             } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
                 throw new GenerateFeedForStoreException(
                     __(
@@ -366,6 +364,25 @@ class GenerateFeedForStore
         }
 
         return $rows;
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws HandlerIsNotSpecifiedException
+     * @throws WrongInstanceException
+     */
+    private function mapVariantRow(
+        Product $childProduct,
+        Product $parentProduct,
+        AttributeConfigDataList $attributesConfigList
+    ): array {
+        $childProduct->setData(ParentProductProvider::VARIANT_PARENT_ID, (int)$parentProduct->getId());
+
+        try {
+            return $this->productToRowMapper->map($childProduct, $attributesConfigList);
+        } finally {
+            $childProduct->unsetData(ParentProductProvider::VARIANT_PARENT_ID);
+        }
     }
 
     /**

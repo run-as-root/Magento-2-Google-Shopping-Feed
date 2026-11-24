@@ -25,6 +25,7 @@ use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributesConfigListProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
 use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
+use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
 use RunAsRoot\GoogleShoppingFeed\Mapper\ProductToFeedAttributesRowMapper;
 use RunAsRoot\GoogleShoppingFeed\Service\GenerateFeedForStore;
 use RunAsRoot\GoogleShoppingFeed\SourceModel\ConfigurableExportType;
@@ -594,11 +595,11 @@ final class GenerateFeedForStoreTest extends TestCase
             ->method('getSku')
             ->willReturn('grouped-child-sku');
         $childProduct->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn($storeId);
-        $childProduct->expects($this->once())
             ->method('getId')
             ->willReturn(2);
+        $groupedProduct->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn($storeId);
 
         $groupedTypeInstance->expects($this->once())
             ->method('getAssociatedProducts')
@@ -1012,13 +1013,13 @@ final class GenerateFeedForStoreTest extends TestCase
 
         $associatedGroupedChild = $this->createMock(Product::class);
         $associatedGroupedChild->method('getSku')->willReturn('grouped-child-sku');
-        $associatedGroupedChild->method('getStoreId')->willReturn(1);
         $associatedGroupedChild->method('getStatus')->willReturn(Status::STATUS_ENABLED);
         $associatedGroupedChild->method('getVisibility')->willReturn(null);
         $groupedTypeInstance = $this->createMock(Grouped::class);
         $groupedTypeInstance->method('getAssociatedProducts')->willReturn([ $associatedGroupedChild ]);
         $groupedProduct = $this->createMock(Product::class);
         $groupedProduct->method('getId')->willReturn(1);
+        $groupedProduct->method('getStoreId')->willReturn(1);
         $groupedProduct->method('getTypeInstance')->willReturn($groupedTypeInstance);
 
         $loadedGroupedChild = $this->createMock(Product::class);
@@ -1075,6 +1076,9 @@ final class GenerateFeedForStoreTest extends TestCase
         $loadedChildProduct->expects($this->once())
             ->method('setData')
             ->with(ParentProductProvider::VARIANT_PARENT_ID, 10);
+        $loadedChildProduct->expects($this->once())
+            ->method('unsetData')
+            ->with(ParentProductProvider::VARIANT_PARENT_ID);
         $this->productRepositoryMock->method('get')->with('child-sku', false, 2)->willReturn($loadedChildProduct);
         $this->mapperMock->method('map')->willReturn([ 'id' => 11 ]);
 
@@ -1129,5 +1133,51 @@ final class GenerateFeedForStoreTest extends TestCase
             ->willReturn('xml string');
 
         $this->sut->execute($storeMock);
+    }
+
+    public function testExecuteRemovesVariantParentTagWhenMappingFails(): void
+    {
+        $storeMock = $this->createMock(StoreInterface::class);
+        $storeMock->method('getId')->willReturn('2');
+        $this->configProviderMock->method('isEnabled')->willReturn(true);
+        $this->configProviderMock->method('getConfigurableExportType')
+            ->willReturn(ConfigurableExportType::EXPORT_CHILD_PRODUCTS);
+        $this->xmlFileWriterProviderMock->method('get')->willReturn($this->createMock(FileWriter::class));
+        $this->attributesConfigListProviderMock->method('get')->willReturn(new AttributeConfigDataList([]));
+        $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
+
+        $usedChildProduct = $this->createMock(Product::class);
+        $usedChildProduct->method('getSku')->willReturn('child-sku');
+        $usedChildProduct->method('getStatus')->willReturn(Status::STATUS_ENABLED);
+        $configurableTypeInstance = $this->createMock(Configurable::class);
+        $configurableTypeInstance->method('getUsedProducts')->willReturn([ $usedChildProduct ]);
+        $configurableProduct = $this->createMock(Product::class);
+        $configurableProduct->method('getId')->willReturn(10);
+        $configurableProduct->method('getStoreId')->willReturn(2);
+        $configurableProduct->method('getTypeInstance')->willReturn($configurableTypeInstance);
+
+        $loadedChildProduct = $this->createPartialMock(Product::class, [ 'getId' ]);
+        $loadedChildProduct->method('getId')->willReturn(11);
+        $this->productRepositoryMock->method('get')->willReturn($loadedChildProduct);
+        $this->mapperMock->method('map')->willReturnCallback(
+            static function (Product $product): array {
+                self::assertSame(10, $product->getData(ParentProductProvider::VARIANT_PARENT_ID));
+
+                throw new HandlerIsNotSpecifiedException(__('No handler'));
+            }
+        );
+
+        $collectionMock = $this->createMock(ProductCollection::class);
+        $collectionMock->method('getItems')->willReturn([ $configurableProduct ]);
+        $collectionMock->method('getPageSize')->willReturn(300);
+        $collectionMock->method('getSize')->willReturn(1);
+        $this->productsCollectionProviderMock->method('get')->willReturn($collectionMock);
+
+        try {
+            $this->sut->execute($storeMock);
+            $this->fail('GenerateFeedForStoreException was expected');
+        } catch (GenerateFeedForStoreException $exception) {
+            $this->assertFalse($loadedChildProduct->hasData(ParentProductProvider::VARIANT_PARENT_ID));
+        }
     }
 }
