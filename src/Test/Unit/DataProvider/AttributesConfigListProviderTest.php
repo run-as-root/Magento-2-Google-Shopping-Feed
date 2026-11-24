@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigData;
 use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataFactory;
 use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SalePriceProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributesConfigListProvider;
 use RunAsRoot\GoogleShoppingFeed\Enum\AttributesToImportEnumInterface;
 
@@ -60,6 +61,17 @@ final class AttributesConfigListProviderTest extends TestCase
             $this->assertEquals($row[ AttributeConfigData::FIELD_NAME ], $item->getFieldName());
             $this->assertEquals($row[ AttributeConfigData::ATTRIBUTE_HANDLER ], $item->getAttributeHandler());
         }
+    }
+
+    public function testSalePriceIsExportedBySalePriceProvider(): void
+    {
+        $this->assertSame(
+            [
+                AttributeConfigData::FIELD_NAME => 'sale_price',
+                AttributeConfigData::ATTRIBUTE_HANDLER => SalePriceProvider::class,
+            ],
+            AttributesToImportEnumInterface::ATTRIBUTES['sale_price']
+        );
     }
 
     public function getExpectedAttributes(): array

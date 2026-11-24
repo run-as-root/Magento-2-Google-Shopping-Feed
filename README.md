@@ -32,6 +32,14 @@ The module will automatically detect MSI availability and use the appropriate in
 Generate product feed every 2 hours with minimal required attributes, for each storeview.  
 Places file into `pub/media/run_as_root/feed/%s_store_%s_feed.xml`.
 
+### Prices
+
+- `g:price` is the regular price (`price` attribute) of the product.
+- `g:sale_price` is the final price a guest pays (special price and catalog price rules for the NOT LOGGED IN customer group and the store's website). It is only exported when it is lower than the regular price.
+- Both use the price as entered in the catalog (no tax adjustments) and are converted once from the base currency into the store view currency.
+- Configurable products exported as parents use the prices of their cheapest available (enabled and in-stock) child. Grouped and bundle products are exported as their child products, each with its own prices.
+- `g:sale_price_effective_date` is not exported, so Google applies the sale price immediately. The feed is regenerated on every run, so ended sales disappear with the next run.
+
 ### Configurable Product Export Control
 
 Configure how configurable products are exported to the feed:
@@ -105,7 +113,7 @@ The "Configurables Export" setting controls how configurable products are handle
 
 - **Only Child Products** (default): Exports child products that are visible individually (Catalog, Search, or Catalog + Search visibility)
 - **Only Parent Products**: Exports the configurable product itself instead of children, with aggregated data:
-  - Price: Lowest price from available (enabled and in-stock) children
+  - Price / Sale Price: Regular and final price of the available (enabled and in-stock) child with the lowest final price
   - Stock Status: In-stock if at least one child is available
   - Images: Uses the configurable product's base image
   - Skips configurable products with no available children

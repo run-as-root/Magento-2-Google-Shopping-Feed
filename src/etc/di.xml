@@ -78,6 +78,7 @@
             <argument name="attributeCode" xsi:type="string">material_cloth</argument>
         </arguments>
     </virtualType>
+    <!-- @deprecated Not used by the feed. Use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SalePriceProvider for g:sale_price. -->
     <virtualType name="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SpecialPriceProvider"
                  type="RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SimpleAttributeHandler">
         <arguments>
