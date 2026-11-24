@@ -19,11 +19,16 @@ use RunAsRoot\GoogleShoppingFeed\DataProvider\CurrencyAmountProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\MatchingTableRatesProvider;
 use RunAsRoot\GoogleShoppingFeed\Query\ShippingTableRateQuery;
 use function array_intersect;
+use function array_merge;
 use function array_slice;
 use function array_values;
 use function count;
 use function max;
 
+/**
+ * @phpstan-import-type RateDestination from MatchingTableRatesProvider
+ * @phpstan-import-type MatchingRate from MatchingTableRatesProvider
+ */
 class ShippingProvider implements AttributeHandlerInterface
 {
     private const CONDITION_PACKAGE_WEIGHT = 'package_weight';
@@ -44,7 +49,7 @@ class ShippingProvider implements AttributeHandlerInterface
     private LoggerInterface $logger;
 
     /**
-     * @var array<int, array<array{country: string, region_id: int, region: ?string, rates: array<array<string, mixed>>}>>
+     * @var array<int, array<RateDestination>>
      */
     private array $rateIndexByStore = [];
 
@@ -95,14 +100,14 @@ class ShippingProvider implements AttributeHandlerInterface
             return [];
         }
 
-        $matchingRates = $this->matchingTableRatesProvider->getFromRateIndex(
+        $groupedRates = $this->matchingTableRatesProvider->getGroupedFromRateIndex(
             $this->getRateIndex($storeId, $conditionName),
             $conditionValue
         );
 
         $result = [];
 
-        foreach ($this->limitToGoogleShippingEntryLimit($matchingRates, $storeId) as $matchingRate) {
+        foreach ($this->limitToGoogleShippingEntryLimit($groupedRates, $storeId) as $matchingRate) {
             $result[] = $this->buildShippingEntry($matchingRate, $storeId);
         }
 
@@ -153,7 +158,7 @@ class ShippingProvider implements AttributeHandlerInterface
     }
 
     /**
-     * @return array<array{country: string, region_id: int, region: ?string, rates: array<array<string, mixed>>}>
+     * @return array<RateDestination>
      * @throws NoSuchEntityException
      */
     private function getRateIndex(int $storeId, string $conditionName): array
@@ -168,7 +173,7 @@ class ShippingProvider implements AttributeHandlerInterface
     }
 
     /**
-     * @return array<array{country: string, region_id: int, region: ?string, rates: array<array<string, mixed>>}>
+     * @return array<RateDestination>
      * @throws NoSuchEntityException
      */
     private function createRateIndex(int $storeId, string $conditionName): array
@@ -208,28 +213,35 @@ class ShippingProvider implements AttributeHandlerInterface
     }
 
     /**
-     * @param array<array{country: string, region: ?string, price: float}> $matchingRates
-     * @return array<array{country: string, region: ?string, price: float}>
+     * Rates applied from rows for any country are all dropped rather than cut off at an arbitrary country.
+     *
+     * @param array{country_rates: array<MatchingRate>, any_country_rates: array<MatchingRate>} $groupedRates
+     * @return array<MatchingRate>
      */
-    private function limitToGoogleShippingEntryLimit(array $matchingRates, int $storeId): array
+    private function limitToGoogleShippingEntryLimit(array $groupedRates, int $storeId): array
     {
-        if (count($matchingRates) <= self::GOOGLE_SHIPPING_ENTRY_LIMIT) {
-            return $matchingRates;
+        $countryRates = $groupedRates['country_rates'];
+        $entryCount = count($countryRates) + count($groupedRates['any_country_rates']);
+
+        if ($entryCount <= self::GOOGLE_SHIPPING_ENTRY_LIMIT) {
+            return array_merge($countryRates, $groupedRates['any_country_rates']);
         }
 
         if (!isset($this->truncationLoggedByStore[$storeId])) {
             $this->logger->warning(
-                'Google Shopping feed: shipping entries were truncated to Google\'s limit of 100 per product.',
-                [ 'store_id' => $storeId, 'shipping_entries' => count($matchingRates) ]
+                'Google Shopping feed: products have more shipping entries than Google\'s limit of 100, so the '
+                . 'rates of table rate rows for all countries (*) were left out. Add table rate rows for your main '
+                . 'countries or set up shipping in the Merchant Center account instead.',
+                [ 'store_id' => $storeId, 'shipping_entries' => $entryCount ]
             );
             $this->truncationLoggedByStore[$storeId] = true;
         }
 
-        return array_slice($matchingRates, 0, self::GOOGLE_SHIPPING_ENTRY_LIMIT);
+        return array_slice($countryRates, 0, self::GOOGLE_SHIPPING_ENTRY_LIMIT);
     }
 
     /**
-     * @param array{country: string, region: ?string, price: float} $matchingRate
+     * @param MatchingRate $matchingRate
      * @return array{country: string, region?: string, price: string}
      * @throws LocalizedException
      * @throws NoSuchEntityException

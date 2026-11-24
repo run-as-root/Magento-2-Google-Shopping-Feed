@@ -109,12 +109,12 @@ final class ShippingProviderTest extends TestCase
         $rateIndex = $this->givenRateIndexIsCreatedOnce(self::COUNTRIES);
 
         $this->matchingTableRatesProviderMock->expects($this->once())
-            ->method('getFromRateIndex')
+            ->method('getGroupedFromRateIndex')
             ->with($rateIndex, 29.0)
-            ->willReturn([
+            ->willReturn($this->groupRates([
                 [ 'country' => 'US', 'region' => null, 'price' => 15.0 ],
                 [ 'country' => 'US', 'region' => 'AK', 'price' => 20.0 ],
-            ]);
+            ]));
 
         $this->assertSame(
             [
@@ -129,8 +129,8 @@ final class ShippingProviderTest extends TestCase
     {
         $this->givenCarrier(true, 'package_value', 'P', 10.0);
         $this->givenRateIndexIsCreatedOnce(self::COUNTRIES);
-        $this->matchingTableRatesProviderMock->method('getFromRateIndex')
-            ->willReturn([ [ 'country' => 'CH', 'region' => null, 'price' => 20.0 ] ]);
+        $this->matchingTableRatesProviderMock->method('getGroupedFromRateIndex')
+            ->willReturn($this->groupRates([ [ 'country' => 'CH', 'region' => null, 'price' => 20.0 ] ]));
 
         $this->assertSame(
             [ [ 'country' => 'CH', 'price' => '22.00 USD@1' ] ],
@@ -147,9 +147,9 @@ final class ShippingProviderTest extends TestCase
         $rateIndex = $this->givenRateIndexIsCreatedOnce(self::COUNTRIES);
 
         $this->matchingTableRatesProviderMock->expects($this->once())
-            ->method('getFromRateIndex')
+            ->method('getGroupedFromRateIndex')
             ->with($rateIndex, $expectedValue)
-            ->willReturn([]);
+            ->willReturn($this->groupRates([]));
 
         $this->assertSame([], $this->sut->get($this->createProduct(29.0, 1.5)));
     }
@@ -182,9 +182,9 @@ final class ShippingProviderTest extends TestCase
         ]);
 
         $this->matchingTableRatesProviderMock->expects($this->once())
-            ->method('getFromRateIndex')
+            ->method('getGroupedFromRateIndex')
             ->with($rateIndex, 4.5)
-            ->willReturn([]);
+            ->willReturn($this->groupRates([]));
 
         $this->sut->get($productMock);
     }
@@ -217,11 +217,11 @@ final class ShippingProviderTest extends TestCase
             ]);
         $usedRateIndexes = [];
         $this->matchingTableRatesProviderMock->expects($this->exactly(4))
-            ->method('getFromRateIndex')
+            ->method('getGroupedFromRateIndex')
             ->willReturnCallback(static function (array $usedRateIndex) use (&$usedRateIndexes): array {
                 $usedRateIndexes[] = $usedRateIndex;
 
-                return [];
+                return [ 'country_rates' => [], 'any_country_rates' => [] ];
             });
 
         $this->sut->get($this->createProduct(29.0, 1.5));
@@ -236,7 +236,7 @@ final class ShippingProviderTest extends TestCase
     {
         $this->givenCarrier(true, 'package_weight', 'F', 0.0, [ 'US', 'DE' ]);
         $this->givenRateIndexIsCreatedOnce([ 'US' ]);
-        $this->matchingTableRatesProviderMock->method('getFromRateIndex')->willReturn([]);
+        $this->matchingTableRatesProviderMock->method('getGroupedFromRateIndex')->willReturn($this->groupRates([]));
 
         $this->sut->get($this->createProduct(29.0, 1.5));
     }
@@ -248,7 +248,7 @@ final class ShippingProviderTest extends TestCase
         $this->recreateSut();
         $this->givenCarrier(true, 'package_weight', 'F', 0.0, [ 'DE' ]);
         $this->givenRateIndexIsCreatedOnce([ 'DE' ]);
-        $this->matchingTableRatesProviderMock->method('getFromRateIndex')->willReturn([]);
+        $this->matchingTableRatesProviderMock->method('getGroupedFromRateIndex')->willReturn($this->groupRates([]));
 
         $this->sut->get($this->createProduct(29.0, 1.5));
     }
@@ -257,31 +257,62 @@ final class ShippingProviderTest extends TestCase
     {
         $this->givenCarrier(true, 'package_weight', 'F', 0.0, [ 'DE' ]);
         $this->shippingTableRateQueryMock->expects($this->never())->method('get');
-        $this->matchingTableRatesProviderMock->method('getFromRateIndex')->with([])->willReturn([]);
+        $this->matchingTableRatesProviderMock->method('getGroupedFromRateIndex')->with([])->willReturn($this->groupRates([]));
 
         $this->assertSame([], $this->sut->get($this->createProduct(29.0, 1.5)));
     }
 
-    public function testGetTruncatesToGoogleLimitAndWarnsOncePerStore(): void
+    public function testGetKeepsAnyCountryRatesWithinGoogleLimit(): void
     {
         $this->givenCarrier(true, 'package_weight', 'F', 0.0);
         $this->givenRateIndexIsCreatedOnce(self::COUNTRIES);
-        $matchingRates = [];
-        for ($index = 0; $index < 150; $index++) {
-            $matchingRates[] = [ 'country' => sprintf('C%03d', $index), 'region' => null, 'price' => 1.0 ];
-        }
-        $this->matchingTableRatesProviderMock->method('getFromRateIndex')->willReturn($matchingRates);
+        $this->matchingTableRatesProviderMock->method('getGroupedFromRateIndex')->willReturn([
+            'country_rates' => $this->createMatchingRates('D', 60),
+            'any_country_rates' => $this->createMatchingRates('W', 40),
+        ]);
+        $this->loggerMock->expects($this->never())->method('warning');
+
+        $result = $this->sut->get($this->createProduct(29.0, 1.5));
+
+        $this->assertCount(100, $result);
+        $this->assertSame('W039', $result[99]['country']);
+    }
+
+    public function testGetDropsAllAnyCountryRatesAboveGoogleLimitAndWarnsOncePerStore(): void
+    {
+        $this->givenCarrier(true, 'package_weight', 'F', 0.0);
+        $this->givenRateIndexIsCreatedOnce(self::COUNTRIES);
+        $this->matchingTableRatesProviderMock->method('getGroupedFromRateIndex')->willReturn([
+            'country_rates' => $this->createMatchingRates('D', 60),
+            'any_country_rates' => $this->createMatchingRates('W', 41),
+        ]);
 
         $this->loggerMock->expects($this->once())
             ->method('warning')
-            ->with($this->stringContains('100'), [ 'store_id' => self::STORE_ID, 'shipping_entries' => 150 ]);
+            ->with($this->stringContains('100'), [ 'store_id' => self::STORE_ID, 'shipping_entries' => 101 ]);
 
         $result = $this->sut->get($this->createProduct(29.0, 1.5));
         $this->sut->get($this->createProduct(99.0, 3.0));
 
+        $this->assertCount(60, $result);
+        $this->assertSame('D059', $result[59]['country']);
+    }
+
+    public function testGetTruncatesCountryRatesAboveGoogleLimit(): void
+    {
+        $this->givenCarrier(true, 'package_weight', 'F', 0.0);
+        $this->givenRateIndexIsCreatedOnce(self::COUNTRIES);
+        $this->matchingTableRatesProviderMock->method('getGroupedFromRateIndex')->willReturn([
+            'country_rates' => $this->createMatchingRates('D', 150),
+            'any_country_rates' => $this->createMatchingRates('W', 10),
+        ]);
+        $this->loggerMock->expects($this->once())->method('warning');
+
+        $result = $this->sut->get($this->createProduct(29.0, 1.5));
+
         $this->assertCount(100, $result);
-        $this->assertSame('C000', $result[0]['country']);
-        $this->assertSame('C099', $result[99]['country']);
+        $this->assertSame('D000', $result[0]['country']);
+        $this->assertSame('D099', $result[99]['country']);
     }
 
     public function testGetReturnsNothingForVirtualProduct(): void
@@ -299,7 +330,7 @@ final class ShippingProviderTest extends TestCase
     {
         $this->givenCarrier(false, 'package_weight', 'F', 0.0);
         $this->shippingTableRateQueryMock->expects($this->never())->method('get');
-        $this->matchingTableRatesProviderMock->expects($this->never())->method('getFromRateIndex');
+        $this->matchingTableRatesProviderMock->expects($this->never())->method('getGroupedFromRateIndex');
 
         $this->assertSame([], $this->sut->get($this->createProduct(29.0, 1.5)));
     }
@@ -357,6 +388,29 @@ final class ShippingProviderTest extends TestCase
             ->willReturn($rateIndex);
 
         return $rateIndex;
+    }
+
+    /**
+     * @param array<array{country: string, region: ?string, price: float}> $countryRates
+     * @return array{country_rates: array<array{country: string, region: ?string, price: float}>, any_country_rates: array<mixed>}
+     */
+    private function groupRates(array $countryRates): array
+    {
+        return [ 'country_rates' => $countryRates, 'any_country_rates' => [] ];
+    }
+
+    /**
+     * @return array<array{country: string, region: ?string, price: float}>
+     */
+    private function createMatchingRates(string $prefix, int $count): array
+    {
+        $matchingRates = [];
+
+        for ($index = 0; $index < $count; $index++) {
+            $matchingRates[] = [ 'country' => sprintf('%s%03d', $prefix, $index), 'region' => null, 'price' => 1.0 ];
+        }
+
+        return $matchingRates;
     }
 
     private function recreateSut(): void

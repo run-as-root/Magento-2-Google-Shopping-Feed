@@ -10,10 +10,12 @@ use function array_column;
 use function array_diff;
 use function array_filter;
 use function array_merge;
+use function array_push;
 use function array_unique;
 use function array_values;
 use function asort;
 use function in_array;
+use function max;
 use function round;
 use function strcmp;
 use function usort;
@@ -21,6 +23,15 @@ use function usort;
 /**
  * Picks the table rate that Magento's table rate carrier charges for a cart holding only the given product,
  * once per destination country and once per region that has its own rate.
+ *
+ * @phpstan-type RateDestination array{
+ *     country: string,
+ *     region_id: int,
+ *     region: ?string,
+ *     rates: array<array<string, mixed>>,
+ *     unexported_region_rates: array<int, array<array<string, mixed>>>
+ * }
+ * @phpstan-type MatchingRate array{country: string, region: ?string, price: float}
  */
 class MatchingTableRatesProvider
 {
@@ -43,7 +54,7 @@ class MatchingTableRatesProvider
     /**
      * @param array<array<string, mixed>> $tableRates rows selected by ShippingTableRateQuery
      * @param string[] $countries
-     * @return array<array{country: string, region: ?string, price: float}>
+     * @return array<MatchingRate>
      */
     public function get(array $tableRates, array $countries, float $conditionValue): array
     {
@@ -53,11 +64,12 @@ class MatchingTableRatesProvider
     /**
      * Groups the rates per destination in the order Magento's table rate carrier prefers them,
      * so that matching a product only needs the first rate within its condition value.
+     * Regions that can't be exported keep their rates on the country, which then charges the highest of them.
      *
      * @see \Magento\OfflineShipping\Model\ResourceModel\Carrier\Tablerate\RateQuery::prepareSelect()
      * @param array<array<string, mixed>> $tableRates rows selected by ShippingTableRateQuery
      * @param string[] $countries
-     * @return array<array{country: string, region_id: int, region: ?string, rates: array<array<string, mixed>>}>
+     * @return array<RateDestination>
      */
     public function createRateIndex(array $tableRates, array $countries): array
     {
@@ -65,11 +77,22 @@ class MatchingTableRatesProvider
         $rateIndex = [];
 
         foreach ($this->getDestinationCountries($anyZipRates, $countries) as $countryId) {
-            $rateIndex[] = $this->createDestination($anyZipRates, $countryId, self::NO_REGION_ID, null);
+            $countryDestination = $this->createDestination($anyZipRates, $countryId, self::NO_REGION_ID, null);
+            $regionDestinations = [];
 
             foreach ($this->getRegionCodes($anyZipRates, $countryId) as $regionId => $regionCode) {
-                $rateIndex[] = $this->createDestination($anyZipRates, $countryId, $regionId, $regionCode);
+                $regionDestination = $this->createDestination($anyZipRates, $countryId, $regionId, $regionCode);
+
+                if (!$this->isIsoRegionCode($countryId, $regionCode)) {
+                    $countryDestination['unexported_region_rates'][$regionId] = $regionDestination['rates'];
+                    continue;
+                }
+
+                $regionDestinations[] = $regionDestination;
             }
+
+            $rateIndex[] = $countryDestination;
+            array_push($rateIndex, ...$regionDestinations);
         }
 
         return $rateIndex;
@@ -78,42 +101,88 @@ class MatchingTableRatesProvider
     /**
      * Rates of explicitly listed countries come first, followed by rates applied from rows for any country.
      *
-     * @param array<array{country: string, region_id: int, region: ?string, rates: array<array<string, mixed>>}> $rateIndex
-     * @return array<array{country: string, region: ?string, price: float}>
+     * @param array<RateDestination> $rateIndex
+     * @return array<MatchingRate>
      */
     public function getFromRateIndex(array $rateIndex, float $conditionValue): array
     {
-        $roundedConditionValue = round($conditionValue, 4);
-        $countryRates = [];
-        $anyCountryRates = [];
+        $groupedRates = $this->getGroupedFromRateIndex($rateIndex, $conditionValue);
 
-        foreach ($rateIndex as $destination) {
-            $rate = $this->findFirstRateWithin($destination['rates'], $roundedConditionValue);
-
-            if (!$this->isChargeable($rate) || (int)$rate['dest_region_id'] !== $destination['region_id']) {
-                continue;
-            }
-
-            $matchingRate = $this->createMatchingRate($destination['country'], $destination['region'], $rate);
-
-            if ($rate['dest_country_id'] === ShippingTableRateQuery::ANY_COUNTRY_ID) {
-                $anyCountryRates[] = $matchingRate;
-                continue;
-            }
-
-            $countryRates[] = $matchingRate;
-        }
-
-        return array_merge($countryRates, $anyCountryRates);
+        return array_merge($groupedRates['country_rates'], $groupedRates['any_country_rates']);
     }
 
     /**
-     * @param array<string, mixed> $tableRate
-     * @return array{country: string, region: ?string, price: float}
+     * @param array<RateDestination> $rateIndex
+     * @return array{country_rates: array<MatchingRate>, any_country_rates: array<MatchingRate>}
      */
-    private function createMatchingRate(string $countryId, ?string $regionCode, array $tableRate): array
+    public function getGroupedFromRateIndex(array $rateIndex, float $conditionValue): array
     {
-        return [ 'country' => $countryId, 'region' => $regionCode, 'price' => (float)$tableRate['price'] ];
+        $roundedConditionValue = round($conditionValue, 4);
+        $groupedRates = [ 'country_rates' => [], 'any_country_rates' => [] ];
+
+        foreach ($rateIndex as $destination) {
+            $rate = $this->findDestinationRate(
+                $destination['rates'],
+                $destination['region_id'],
+                $roundedConditionValue
+            );
+
+            if ($rate === null) {
+                continue;
+            }
+
+            $matchingRate = [
+                'country' => $destination['country'],
+                'region' => $destination['region'],
+                'price' => $this->getHighestPrice(
+                    $rate,
+                    $destination['unexported_region_rates'],
+                    $roundedConditionValue
+                ),
+            ];
+            $group = $rate['dest_country_id'] === ShippingTableRateQuery::ANY_COUNTRY_ID
+                ? 'any_country_rates'
+                : 'country_rates';
+            $groupedRates[$group][] = $matchingRate;
+        }
+
+        return $groupedRates;
+    }
+
+    /**
+     * @param array<array<string, mixed>> $sortedRates
+     * @return array<string, mixed>|null
+     */
+    private function findDestinationRate(array $sortedRates, int $regionId, float $conditionValue): ?array
+    {
+        $rate = $this->findFirstRateWithin($sortedRates, $conditionValue);
+
+        if (!$this->isChargeable($rate) || (int)$rate['dest_region_id'] !== $regionId) {
+            return null;
+        }
+
+        return $rate;
+    }
+
+    /**
+     * @param array<string, mixed> $rate
+     * @param array<int, array<array<string, mixed>>> $unexportedRegionRates
+     */
+    private function getHighestPrice(array $rate, array $unexportedRegionRates, float $conditionValue): float
+    {
+        $price = (float)$rate['price'];
+
+        foreach ($unexportedRegionRates as $regionId => $regionRates) {
+            $regionRate = $this->findDestinationRate($regionRates, $regionId, $conditionValue);
+
+            if ($regionRate === null) {
+                continue;
+            }
+
+            $price = max($price, (float)$regionRate['price']);
+        }
+
+        return $price;
     }
 
     /**
@@ -181,7 +250,6 @@ class MatchingTableRatesProvider
                 $regionId === self::NO_REGION_ID
                 || ($tableRate['region_country_id'] ?? null) !== $countryId
                 || !$this->isAppliedToCountry($tableRate, $countryId)
-                || !$this->isIsoRegionCode($countryId, (string)$tableRate['region_code'])
             ) {
                 continue;
             }
@@ -196,7 +264,7 @@ class MatchingTableRatesProvider
 
     /**
      * @param array<array<string, mixed>> $tableRates
-     * @return array{country: string, region_id: int, region: ?string, rates: array<array<string, mixed>>}
+     * @return RateDestination
      */
     private function createDestination(array $tableRates, string $countryId, int $regionId, ?string $regionCode): array
     {
@@ -217,7 +285,13 @@ class MatchingTableRatesProvider
                 ?: (float)$right['condition_value'] <=> (float)$left['condition_value'];
         });
 
-        return [ 'country' => $countryId, 'region_id' => $regionId, 'region' => $regionCode, 'rates' => $rates ];
+        return [
+            'country' => $countryId,
+            'region_id' => $regionId,
+            'region' => $regionCode,
+            'rates' => $rates,
+            'unexported_region_rates' => [],
+        ];
     }
 
     /**

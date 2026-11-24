@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Shipping: each product now gets the single table rate that checkout would charge for it (matched by final price, weight or quantity against the condition value, including the handling fee), per country and per region via `<g:region>`, instead of every `shipping_tablerate` row. Rows of other websites, ZIP-specific rows and region rows of countries without ISO 3166-2 region codes are skipped, the carrier's "Ship to Specific Countries" setting is applied, and entries are capped at Google's limit of 100 per product (#35)
+- Shipping: each product now gets the single table rate that checkout would charge for it (matched by final price, weight or quantity against the condition value, including the handling fee), per country and per region via `<g:region>`, instead of every `shipping_tablerate` row. Rows of other websites, ZIP-specific rows are skipped, regions of countries without ISO 3166-2 region codes raise the country rate to their highest rate instead of being exported, the carrier's "Ship to Specific Countries" setting is applied, and when a product would exceed Google's limit of 100 entries, the rates from table rate rows for all countries are left out (#35)
 - Shipping: no `<g:shipping>` is exported when the table rate carrier is disabled, or for virtual and downloadable products (#35)
 
 ### Changed

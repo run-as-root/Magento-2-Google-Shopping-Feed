@@ -94,21 +94,64 @@ final class MatchingTableRatesProviderTest extends TestCase
         );
     }
 
-    public function testGetSkipsRegionsWithNonIsoRegionCodes(): void
+    public function testGetChargesHighestRateOfNonIsoRegionsOnTheCountry(): void
     {
         $tableRates = [
-            $this->createTableRate('DE', 0, '*', 0.0, 4.95),
-            $this->createTableRate('DE', 81, '*', 0.0, 9.95, 'BAY', 'DE'),
+            $this->createTableRate('DE', 0, '*', 0.0, 6.0),
+            $this->createTableRate('DE', 81, '*', 0.0, 11.0, 'BAY', 'DE'),
+            $this->createTableRate('DE', 82, '*', 0.0, 3.0, 'BER', 'DE'),
             $this->createTableRate('US', 0, '*', 0.0, 15.0),
             $this->createTableRate('US', 9, '*', 0.0, 25.0, 'AE', 'US'),
+            $this->createTableRate('US', 2, '*', 0.0, 20.0, 'AK', 'US'),
         ];
 
         $this->assertSame(
             [
-                ['country' => 'DE', 'region' => null, 'price' => 4.95],
-                ['country' => 'US', 'region' => null, 'price' => 15.0],
+                ['country' => 'DE', 'region' => null, 'price' => 11.0],
+                ['country' => 'US', 'region' => null, 'price' => 25.0],
+                ['country' => 'US', 'region' => 'AK', 'price' => 20.0],
             ],
             $this->sut->get($tableRates, ['DE', 'US'], 10.0)
+        );
+    }
+
+    public function testGetIgnoresNonIsoRegionsWithoutOwnRateWithinConditionValue(): void
+    {
+        $tableRates = [
+            $this->createTableRate('DE', 0, '*', 0.0, 6.0),
+            $this->createTableRate('DE', 81, '*', 50.0, 11.0, 'BAY', 'DE'),
+            $this->createTableRate('DE', 82, '*', 0.0, -1.0, 'BER', 'DE'),
+        ];
+
+        $this->assertSame(
+            [['country' => 'DE', 'region' => null, 'price' => 6.0]],
+            $this->sut->get($tableRates, ['DE'], 10.0)
+        );
+    }
+
+    public function testGetSkipsCountryWithoutCountryRateEvenIfNonIsoRegionsHaveRates(): void
+    {
+        $tableRates = [
+            $this->createTableRate('DE', 81, '*', 0.0, 11.0, 'BAY', 'DE'),
+        ];
+
+        $this->assertSame([], $this->sut->get($tableRates, ['DE'], 10.0));
+    }
+
+    public function testGetGroupedFromRateIndexSeparatesAnyCountryRates(): void
+    {
+        $tableRates = [
+            $this->createTableRate('0', 0, '*', 0.0, 30.0),
+            $this->createTableRate('DE', 0, '*', 0.0, 4.95),
+        ];
+        $rateIndex = $this->sut->createRateIndex($tableRates, ['US', 'DE']);
+
+        $this->assertSame(
+            [
+                'country_rates' => [['country' => 'DE', 'region' => null, 'price' => 4.95]],
+                'any_country_rates' => [['country' => 'US', 'region' => null, 'price' => 30.0]],
+            ],
+            $this->sut->getGroupedFromRateIndex($rateIndex, 10.0)
         );
     }
 
