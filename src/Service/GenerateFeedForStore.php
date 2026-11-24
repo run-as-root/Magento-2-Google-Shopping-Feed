@@ -8,6 +8,7 @@ use Magento\Bundle\Model\Product\Type as BundleProduct;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Exception\FileSystemException;
@@ -207,9 +208,7 @@ class GenerateFeedForStore
                 continue;
             }
 
-            $visibility = (int)$childProduct->getVisibility();
-
-            if ($visibility === \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE) {
+            if ((int)$childProduct->getVisibility() === Visibility::VISIBILITY_NOT_VISIBLE) {
                 continue;
             }
 
@@ -261,7 +260,10 @@ class GenerateFeedForStore
                         throw new \InvalidArgumentException('Expected Product instance');
                     }
     
-                    if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
+                    if (
+                        (int)$childProduct->getStatus() !== self::STATUS_ENABLED
+                        || (int)$childProduct->getVisibility() === Visibility::VISIBILITY_NOT_VISIBLE
+                    ) {
                         continue;
                     }
 
@@ -338,12 +340,6 @@ class GenerateFeedForStore
         foreach ($childProducts as $childProduct) {
             /** @var Product $childProduct */
             if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
-                continue;
-            }
-
-            $visibility = (int)$childProduct->getVisibility();
-
-            if ($visibility === \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE) {
                 continue;
             }
 

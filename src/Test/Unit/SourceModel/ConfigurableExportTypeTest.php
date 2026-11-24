@@ -23,7 +23,7 @@ final class ConfigurableExportTypeTest extends TestCase
         $this->assertCount(2, $result);
 
         $this->assertEquals(ConfigurableExportType::EXPORT_CHILD_PRODUCTS, $result[0]['value']);
-        $this->assertEquals('Only Visible Child Products', (string) $result[0]['label']);
+        $this->assertEquals('Child Products (Variants)', (string) $result[0]['label']);
 
         $this->assertEquals(ConfigurableExportType::EXPORT_PARENT_PRODUCTS, $result[1]['value']);
         $this->assertEquals('Only Parent Products', (string) $result[1]['label']);

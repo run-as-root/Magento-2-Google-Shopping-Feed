@@ -36,7 +36,7 @@ Places file into `pub/media/run_as_root/feed/%s_store_%s_feed.xml`.
 
 Configure how configurable products are exported to the feed:
 - **Only Parent Products**: Export the configurable product itself with aggregated data from available children (lowest price, stock status based on child availability, parent product images)
-- **Only Child Products**: Export child products that are visible individually (visibility levels: Catalog, Search, or Catalog + Search)
+- **Child Products (Variants)**: Export every enabled child product as a variant, regardless of its visibility. The link points to the parent product and `item_group_id` is the parent SKU
 
 ## Technical Specification
 
@@ -103,14 +103,17 @@ Performs iteration on all products provided by this collection provider `\RunAsR
 
 The "Configurables Export" setting controls how configurable products are handled in the feed:
 
-- **Only Child Products** (default): Exports child products that are visible individually (Catalog, Search, or Catalog + Search visibility)
-- **Only Parent Products**: Exports the configurable product itself instead of children, with aggregated data:
+- **Child Products (Variants)** (default): Exports every enabled child product of a configurable product as a variant, regardless of the child's visibility. The link points to the parent product and `item_group_id` is the parent SKU
+- **Only Parent Products**: Exports the configurable product itself, never its children, with aggregated data:
   - Price: Lowest price from available (enabled and in-stock) children
   - Stock Status: In-stock if at least one child is available
   - Images: Uses the configurable product's base image
   - Skips configurable products with no available children
 
 This setting is configurable per store view to allow different export strategies for different stores.
+
+Children of configurable products are exported only through their parent, so they are exported only when the parent product is enabled and assigned to an exported category.
+All other products, including children of grouped and bundle products, are exported only when they are visible individually (Catalog, Search, or Catalog + Search), because products that are "Not Visible Individually" have no product page to link to.
 
 
 ## Extensability points
