@@ -158,6 +158,80 @@ final class ProductPricesProviderTest extends TestCase
         $this->assertSame(0.0, $result->getFinalPrice());
     }
 
+    public function testGetComputesOnceForConsecutiveCallsWithSameProductAndStore(): void
+    {
+        $child = $this->createChildMock('child', 20.0, 15.0, Status::STATUS_ENABLED);
+        $parentMock = $this->createMock(Product::class);
+        $typeInstanceMock = $this->createMock(Configurable::class);
+        $typeInstanceMock->expects($this->once())->method('getUsedProducts')->willReturn([$child]);
+        $parentMock->method('getTypeInstance')->willReturn($typeInstanceMock);
+        $parentMock->method('getId')->willReturn('10');
+        $parentMock->method('getStoreId')->willReturn((string)self::STORE_ID);
+        $this->inventoryAdapterMock->expects($this->once())
+            ->method('areProductsSalable')
+            ->willReturn([new InventorySalableResult('child', true)]);
+
+        $first = $this->sut->get($parentMock);
+        $second = $this->sut->get($parentMock);
+
+        $this->assertSame($first, $second);
+        $this->assertSame(20.0, $second->getRegularPrice());
+        $this->assertSame(15.0, $second->getFinalPrice());
+    }
+
+    public function testGetRecomputesForDifferentProductId(): void
+    {
+        $firstProduct = $this->createSimpleProductMock('10', self::STORE_ID, 30.0, 25.0);
+        $secondProduct = $this->createSimpleProductMock('11', self::STORE_ID, 50.0, 40.0);
+
+        $firstResult = $this->sut->get($firstProduct);
+        $secondResult = $this->sut->get($secondProduct);
+
+        $this->assertSame(25.0, $firstResult->getFinalPrice());
+        $this->assertSame(40.0, $secondResult->getFinalPrice());
+    }
+
+    public function testGetRecomputesForSameProductIdInDifferentStore(): void
+    {
+        $storeId = self::STORE_ID;
+        $productMock = $this->createMock(Product::class);
+        $productMock->method('getTypeInstance')->willReturn($this->createMock(Simple::class));
+        $productMock->method('getId')->willReturn('10');
+        $productMock->method('getStoreId')->willReturnCallback(static function () use (&$storeId) {
+            return (string)$storeId;
+        });
+        $productMock->method('getPrice')->willReturn('30.0');
+        $productMock->expects($this->exactly(2))->method('getFinalPrice')->willReturn(25.0);
+
+        $this->sut->get($productMock);
+        $storeId = self::STORE_ID + 1;
+        $this->sut->get($productMock);
+    }
+
+    public function testGetRecomputesForDifferentProductInstanceWithSameIdAndStore(): void
+    {
+        $firstInstance = $this->createSimpleProductMock('10', self::STORE_ID, 30.0, 25.0);
+        $secondInstance = $this->createSimpleProductMock('10', self::STORE_ID, 30.0, 20.0);
+
+        $this->assertSame(25.0, $this->sut->get($firstInstance)->getFinalPrice());
+        $this->assertSame(20.0, $this->sut->get($secondInstance)->getFinalPrice());
+    }
+
+    /**
+     * @return Product|MockObject
+     */
+    private function createSimpleProductMock(string $id, int $storeId, float $regularPrice, float $finalPrice)
+    {
+        $productMock = $this->createMock(Product::class);
+        $productMock->method('getTypeInstance')->willReturn($this->createMock(Simple::class));
+        $productMock->method('getId')->willReturn($id);
+        $productMock->method('getStoreId')->willReturn((string)$storeId);
+        $productMock->method('getPrice')->willReturn((string)$regularPrice);
+        $productMock->expects($this->once())->method('getFinalPrice')->willReturn($finalPrice);
+
+        return $productMock;
+    }
+
     /**
      * @param Product[] $children
      * @return Product|MockObject

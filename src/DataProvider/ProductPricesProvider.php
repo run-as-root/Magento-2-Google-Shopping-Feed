@@ -22,6 +22,10 @@ class ProductPricesProvider
     private GetAssignedStockIdForStore $getAssignedStockIdForStore;
     private InventoryAdapterFactory $inventoryAdapterFactory;
     private ?InventoryAdapterInterface $inventoryAdapter = null;
+    private ?Product $lastProduct = null;
+    private ?int $lastProductId = null;
+    private ?int $lastStoreId = null;
+    private ?ProductPricesData $lastPrices = null;
 
     public function __construct(
         GetAssignedStockIdForStore $getAssignedStockIdForStore,
@@ -32,6 +36,33 @@ class ProductPricesProvider
     }
 
     public function get(Product $product): ProductPricesData
+    {
+        if ($this->lastPrices !== null && $this->isLastComputedFor($product)) {
+            return $this->lastPrices;
+        }
+
+        $prices = $this->calculate($product);
+        $this->rememberLastComputed($product, $prices);
+
+        return $prices;
+    }
+
+    private function isLastComputedFor(Product $product): bool
+    {
+        return $this->lastProduct === $product
+            && $this->lastProductId === (int)$product->getId()
+            && $this->lastStoreId === (int)$product->getStoreId();
+    }
+
+    private function rememberLastComputed(Product $product, ProductPricesData $prices): void
+    {
+        $this->lastProduct = $product;
+        $this->lastProductId = (int)$product->getId();
+        $this->lastStoreId = (int)$product->getStoreId();
+        $this->lastPrices = $prices;
+    }
+
+    private function calculate(Product $product): ProductPricesData
     {
         $typeInstance = $product->getTypeInstance();
 
