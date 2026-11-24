@@ -17,6 +17,7 @@ use RunAsRoot\GoogleShoppingFeed\ConfigProvider\TableRateCarrierConfigProvider;
 use RunAsRoot\GoogleShoppingFeed\ConfigProvider\TableRateConditionProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\CurrencyAmountProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\MatchingTableRatesProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\SingleItemGuestCartPriceProvider;
 use RunAsRoot\GoogleShoppingFeed\Query\ShippingTableRateQuery;
 use function array_intersect;
 use function array_merge;
@@ -47,6 +48,7 @@ class ShippingProvider implements AttributeHandlerInterface
     private MatchingTableRatesProvider $matchingTableRatesProvider;
     private StoreManagerInterface $storeManager;
     private LoggerInterface $logger;
+    private SingleItemGuestCartPriceProvider $singleItemGuestCartPriceProvider;
 
     /**
      * @var array<int, array<RateDestination>>
@@ -67,7 +69,8 @@ class ShippingProvider implements AttributeHandlerInterface
         TableRateCarrierConfigProvider $tableRateCarrierConfigProvider,
         MatchingTableRatesProvider $matchingTableRatesProvider,
         StoreManagerInterface $storeManager,
-        LoggerInterface $logger
+        LoggerInterface $logger,
+        SingleItemGuestCartPriceProvider $singleItemGuestCartPriceProvider
     ) {
         $this->allowedCountriesProvider = $allowedCountriesProvider;
         $this->tableRateConditionProvider = $tableRateConditionProvider;
@@ -78,6 +81,7 @@ class ShippingProvider implements AttributeHandlerInterface
         $this->matchingTableRatesProvider = $matchingTableRatesProvider;
         $this->storeManager = $storeManager;
         $this->logger = $logger;
+        $this->singleItemGuestCartPriceProvider = $singleItemGuestCartPriceProvider;
     }
 
     /**
@@ -120,7 +124,7 @@ class ShippingProvider implements AttributeHandlerInterface
             $conditionName === self::CONDITION_PACKAGE_VALUE
             || $conditionName === self::CONDITION_PACKAGE_VALUE_WITH_DISCOUNT
         ) {
-            return (float)$product->getFinalPrice();
+            return $this->singleItemGuestCartPriceProvider->get($product);
         }
 
         if ($conditionName === self::CONDITION_PACKAGE_WEIGHT) {

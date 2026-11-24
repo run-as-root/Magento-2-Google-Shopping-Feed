@@ -20,6 +20,7 @@ use RunAsRoot\GoogleShoppingFeed\ConfigProvider\TableRateConditionProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ShippingProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\CurrencyAmountProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\MatchingTableRatesProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\SingleItemGuestCartPriceProvider;
 use RunAsRoot\GoogleShoppingFeed\Query\ShippingTableRateQuery;
 
 final class ShippingProviderTest extends TestCase
@@ -59,6 +60,9 @@ final class ShippingProviderTest extends TestCase
     /** @var LoggerInterface|MockObject */
     private $loggerMock;
 
+    /** @var SingleItemGuestCartPriceProvider|MockObject */
+    private $singleItemGuestCartPriceProviderMock;
+
     /** @var AdapterInterface|MockObject */
     private $adapterMock;
 
@@ -73,6 +77,8 @@ final class ShippingProviderTest extends TestCase
         $this->matchingTableRatesProviderMock = $this->createMock(MatchingTableRatesProvider::class);
         $this->storeManagerMock = $this->createMock(StoreManagerInterface::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
+        $this->singleItemGuestCartPriceProviderMock = $this->createMock(SingleItemGuestCartPriceProvider::class);
+        $this->singleItemGuestCartPriceProviderMock->method('get')->willReturn(23.0);
         $this->adapterMock = $this->createMock(AdapterInterface::class);
 
         $this->resourceConnectionMock->method('getConnection')->willReturn($this->adapterMock);
@@ -99,7 +105,8 @@ final class ShippingProviderTest extends TestCase
             $this->tableRateCarrierConfigProviderMock,
             $this->matchingTableRatesProviderMock,
             $this->storeManagerMock,
-            $this->loggerMock
+            $this->loggerMock,
+            $this->singleItemGuestCartPriceProviderMock
         );
     }
 
@@ -110,7 +117,7 @@ final class ShippingProviderTest extends TestCase
 
         $this->matchingTableRatesProviderMock->expects($this->once())
             ->method('getGroupedFromRateIndex')
-            ->with($rateIndex, 29.0)
+            ->with($rateIndex, 23.0)
             ->willReturn($this->groupRates([
                 [ 'country' => 'US', 'region' => null, 'price' => 15.0 ],
                 [ 'country' => 'US', 'region' => 'AK', 'price' => 20.0 ],
@@ -160,8 +167,8 @@ final class ShippingProviderTest extends TestCase
     public static function conditionValueProvider(): array
     {
         return [
-            'package value' => [ 'package_value', 29.0 ],
-            'package value with discount' => [ 'package_value_with_discount', 29.0 ],
+            'package value' => [ 'package_value', 23.0 ],
+            'package value with discount' => [ 'package_value_with_discount', 23.0 ],
             'package weight' => [ 'package_weight', 1.5 ],
             'package qty' => [ 'package_qty', 1.0 ],
         ];
@@ -424,7 +431,8 @@ final class ShippingProviderTest extends TestCase
             $this->tableRateCarrierConfigProviderMock,
             $this->matchingTableRatesProviderMock,
             $this->storeManagerMock,
-            $this->loggerMock
+            $this->loggerMock,
+            $this->singleItemGuestCartPriceProviderMock
         );
     }
 

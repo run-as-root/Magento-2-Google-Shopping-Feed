@@ -8,11 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Shipping: each product now gets the single table rate that checkout would charge for it (matched by final price, weight or quantity against the condition value, including the handling fee), per country and per region via `<g:region>`, instead of every `shipping_tablerate` row. Rows of other websites, ZIP-specific rows are skipped, regions of countries without ISO 3166-2 region codes raise the country rate to their highest rate instead of being exported, the carrier's "Ship to Specific Countries" setting is applied, and when a product would exceed Google's limit of 100 entries, the rates from table rate rows for all countries are left out (#35)
+- Shipping: each product now gets the single table rate that checkout would charge for it (matched by the one-item guest cart price including catalog price rules, weight or quantity against the condition value, including the handling fee), per country and per region via `<g:region>`, instead of every `shipping_tablerate` row. Rows of other websites and ZIP-specific rows are skipped, regions of countries without ISO 3166-2 region codes raise the country rate to their highest rate instead of being exported, the carrier's "Ship to Specific Countries" setting is applied, and when a product would exceed Google's limit of 100 entries, the rates from table rate rows for all countries are left out (#35)
 - Shipping: no `<g:shipping>` is exported when the table rate carrier is disabled, or for virtual and downloadable products (#35)
 
 ### Changed
-- `ShippingProvider` has new constructor arguments (`TableRateCarrierConfigProvider`, `MatchingTableRatesProvider`, `StoreManagerInterface`, `LoggerInterface`). This only affects classes that extend it (#35)
+- `ShippingProvider` has new constructor arguments (`TableRateCarrierConfigProvider`, `MatchingTableRatesProvider`, `StoreManagerInterface`, `LoggerInterface`, `SingleItemGuestCartPriceProvider`). This only affects classes that extend it (#35)
+- The module now depends on `Magento_Customer` (#35)
 
 ## [1.1.0] - 2024-07-27
 
