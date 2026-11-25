@@ -175,6 +175,8 @@ final class GenerateFeedForStoreTest extends TestCase
 
         $typeInstanceMock = $this->createMock(Simple::class);
 
+        $productOne->method('getId')
+            ->willReturn(1);
         $productOne->expects($this->once())
             ->method('getTypeInstance')
             ->willReturn($typeInstanceMock);
