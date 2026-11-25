@@ -104,6 +104,11 @@ final class ArrayToXmlConverterTest extends TestCase
                         'country' => 'NO',
                         'price' => '23,68 EUR',
                     ],
+                    4 => [
+                        'country' => 'US',
+                        'region' => 'AK',
+                        'price' => '20,00 EUR',
+                    ],
                 ],
                 'sku' => 'FAN-53KBBW01V0011-155/220',
                 'url' => 'https://app.default.test/cashmere-90-duo-bettdecke-extra-warm-frankenstolz?tec_size_bettwaren_config=1113',
@@ -157,6 +162,11 @@ final class ArrayToXmlConverterTest extends TestCase
             <g:shipping>
                 <g:country><![CDATA[NO]]></g:country>
                 <g:price><![CDATA[23,68 EUR]]></g:price>
+             </g:shipping>
+            <g:shipping>
+                <g:country><![CDATA[US]]></g:country>
+                <g:region><![CDATA[AK]]></g:region>
+                <g:price><![CDATA[20,00 EUR]]></g:price>
              </g:shipping>
 			<g:additional_image_link><![CDATA[https://app.default.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/o/e/oeko-tex-zertifizierte-schadstoffkontrollierte-bettwaren-frankenstolz_3_2_1_2_2_4_1_1_3_2_2_2_2.jpg]]></g:additional_image_link><g:additional_image_link><![CDATA[https://app.default.test/media/catalog/product/cache/775fcb5986783027a0f3aac116b4fff3/f/a/fan-bettwaren-made-in-germany_2_2_1_2_2_4_1_1_3_2_2_2_2.jpg]]></g:additional_image_link>
 		</item>

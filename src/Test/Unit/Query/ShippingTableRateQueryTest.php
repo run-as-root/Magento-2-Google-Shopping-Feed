@@ -18,53 +18,61 @@ class ShippingTableRateQueryTest extends TestCase
     /** @var ResourceConnection|MockObject */
     private $resourceConnectionMock;
 
+    /** @var Select|MockObject */
+    private $selectMock;
+
+    /** @var array<array{string, mixed}> */
+    private array $whereConditions = [];
+
     protected function setUp(): void
     {
         $this->resourceConnectionMock = $this->createMock(ResourceConnection::class);
         $this->sut = new ShippingTableRateQuery($this->resourceConnectionMock);
+
+        $adapterMock = $this->createMock(AdapterInterface::class);
+        $this->resourceConnectionMock->method('getConnection')->willReturn($adapterMock);
+        $this->resourceConnectionMock->method('getTableName')->willReturnArgument(0);
+
+        $this->selectMock = $this->createMock(Select::class);
+        $adapterMock->method('select')->willReturn($this->selectMock);
+
+        $this->selectMock->expects($this->once())
+            ->method('from')
+            ->with(['tablerate' => 'shipping_tablerate'])
+            ->willReturnSelf();
+        $this->selectMock->expects($this->once())
+            ->method('joinLeft')
+            ->with(
+                ['region' => 'directory_country_region'],
+                'region.region_id = tablerate.dest_region_id',
+                ['region_code' => 'region.code', 'region_country_id' => 'region.country_id']
+            )
+            ->willReturnSelf();
+        $this->selectMock->method('where')->willReturnCallback(function ($condition, $value) {
+            $this->whereConditions[] = [$condition, $value];
+
+            return $this->selectMock;
+        });
     }
 
-    public function testGet55(): void
+    public function testGetFiltersByConditionWebsiteAndCountriesIncludingAnyCountry(): void
     {
-        $adapterMock = $this->createMock(AdapterInterface::class);
-        $this->resourceConnectionMock
-            ->expects($this->once())
-            ->method('getConnection')
-            ->willReturn($adapterMock);
+        $this->sut->get(['CH', 'DE'], 'package_value', 1);
 
-        $selectMock = $this->createMock(Select::class);
-        $adapterMock->expects($this->once())
-            ->method('select')
-            ->willReturn($selectMock);
+        $this->assertSame(
+            [
+                ['tablerate.condition_name = ?', 'package_value'],
+                ['tablerate.website_id = ?', 1],
+                ['tablerate.dest_country_id in (?)', ['CH', 'DE', '0']],
+            ],
+            $this->whereConditions
+        );
+    }
 
-        $this->resourceConnectionMock
-            ->expects($this->once())
-            ->method('getTableName')
-            ->with('shipping_tablerate')
-            ->willReturn('shipping_tablerate');
+    public function testGetWithoutWebsiteAndCountriesFiltersByConditionOnly(): void
+    {
+        $this->sut->get([], 'package_weight');
 
-        $selectMock->expects($this->once())
-            ->method('from')
-            ->with('shipping_tablerate', '*', null)
-            ->willReturnSelf();
-
-        $conditionName = 'package_value';
-        $countries = ['CH', 'DE'];
-        
-        $whereInvokedCount = $this->exactly(2);
-        $selectMock->expects($whereInvokedCount)
-            ->method('where')
-            ->willReturnCallback(function ($condition, $value) use ($conditionName, $countries, $selectMock, $whereInvokedCount) {
-                return match ($whereInvokedCount->numberOfInvocations()) {
-                    1 => $this->assertEquals('condition_name = ?', $condition) 
-                         ?: $this->assertEquals($conditionName, $value) 
-                         ?: $selectMock,
-                    2 => $this->assertEquals('dest_country_id in (?)', $condition) 
-                         ?: $this->assertEquals($countries, $value) 
-                         ?: $selectMock,
-                };
-            });
-
-        $this->sut->get($countries, $conditionName);
+        $this->assertSame([['tablerate.condition_name = ?', 'package_weight']], $this->whereConditions);
     }
 }
