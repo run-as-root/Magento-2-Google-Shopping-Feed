@@ -122,13 +122,27 @@ A configurable product is an **exportable parent** in a store view when it is en
 Status and visibility are read from the store view value, falling back to the default (All Store Views) value.
 
 
+## Shipping
+The `shipping` attribute is exported from the Magento table rate carrier (`Stores > Configuration > Sales > Delivery Methods > Table Rates`):
+* Nothing is exported when the table rate carrier is disabled, and nothing for virtual and downloadable products.
+* Each product gets the rate that checkout charges for a cart holding only that product: the table rate row with the highest condition value up to the product's price in a one-item guest cart (`package_value`, `package_value_with_discount`: special price, tier price for a quantity of 1 and catalog price rules of the NOT LOGGED IN group), weight (`package_weight`) or a quantity of 1 (`package_qty`), plus the configured handling fee. Only rows of the store's website are used. Configurable products use the weight of their heaviest enabled child and the price of their cheapest enabled child.
+* Rates are exported for the allowed countries of the store, limited to the carrier's "Ship to Specific Countries" when that is set.
+* One `<g:shipping>` is exported per country, plus one with `<g:region>` per region that has its own rate. Regions are exported only for countries whose Magento region codes are ISO 3166-2 codes (AU, BE, BR, CA, CH, MX, RO, US); region rows of other countries are not exported separately; instead the country gets the highest of its own rate and those region rates, so no region is under-quoted. A country without its own matching rate is not exported. Rows for specific ZIP codes are skipped. Rows for all countries (`*`) apply to every country, with lower priority than country rows, as in checkout.
+* Google accepts at most 100 `<g:shipping>` entries per product. When a product would get more, all rates that come from `*` rows are left out (rates from country rows are kept, cut at 100 if they alone exceed it) and a warning is logged once per store. Add table rate rows for your main countries, or set up shipping in the Merchant Center account, to avoid this.
+* This is a single-item cart estimate and Google uses it instead of the account shipping settings. If shipping depends on the cart total or weight of multi-item orders, consider leaving the `shipping` attribute out and setting up order-price or weight-based rates in the Merchant Center account shipping settings instead.
+
+Known limitations:
+* `package_value` conditions are matched against the product's price excluding cart price rules. With tax-inclusive catalog prices, checkout compares the tax-excluded subtotal instead, so a product close to a tier boundary can get a different tier.
+* Cart price rules (free shipping, free method weight, discounts) are not applied: the feed shows the table rate without them, which may over-quote.
+* When the winning rate of a region has a negative price (checkout then offers no table rate there), the region is skipped, so Google applies the country rate to that region.
+
 ## Extensability points
 ### Add new attribute to feed
 1. Create new attribute data provider. @see interface `\RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\AttributeHandlerInterface`.
 2. Add configuration for new attribute in `\RunAsRoot\GoogleShoppingFeed\Enum\AttributesToImportEnumInterface::ATTRIBUTES`.
 
 ### Use a custom shipping data source
-The `shipping` attribute only reads the `shipping_tablerate` table. To feed shipping costs from another source (Colissimo, GLS, ...), add a DI `<preference>` for `\RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ShippingProvider` pointing to your own class implementing `AttributeHandlerInterface`. Its `get(Product $product)` must return a list of `['country' => 'DE', 'price' => '12.00 EUR']` entries.
+The `shipping` attribute only reads the `shipping_tablerate` table. To feed shipping costs from another source (Colissimo, GLS, ...), add a DI `<preference>` for `\RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ShippingProvider` pointing to your own class implementing `AttributeHandlerInterface`. Its `get(Product $product)` must return a list of `['country' => 'DE', 'price' => '12.00 EUR']` entries, optionally with a `'region' => 'BY'` key (ISO 3166-2 subdivision code without the country prefix), which is exported as `<g:region>`.
 
 ## Google Shopping Feeds Grid
 Generated feeds could be reviewed inside Admin Backoffice
