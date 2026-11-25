@@ -44,7 +44,7 @@ Places file into `pub/media/run_as_root/feed/%s_store_%s_feed.xml`.
 
 Configure how configurable products are exported to the feed:
 - **Only Parent Products**: Export the configurable product itself with aggregated data from available children (lowest price, stock status based on child availability, parent product images)
-- **Only Child Products**: Export child products that are visible individually (visibility levels: Catalog, Search, or Catalog + Search)
+- **Child Products (Variants)**: Export every enabled child product as a variant, regardless of its visibility. The link points to the parent product and `item_group_id` is the parent SKU
 
 ## Technical Specification
 
@@ -111,14 +111,23 @@ Performs iteration on all products provided by this collection provider `\RunAsR
 
 The "Configurables Export" setting controls how configurable products are handled in the feed:
 
-- **Only Child Products** (default): Exports child products that are visible individually (Catalog, Search, or Catalog + Search visibility)
-- **Only Parent Products**: Exports the configurable product itself instead of children, with aggregated data:
+- **Child Products (Variants)** (default): Exports every enabled child product of a configurable product as a variant, regardless of the child's visibility. The link points to the parent product and `item_group_id` is the parent SKU
+- **Only Parent Products**: Exports the configurable product itself, never its children, with aggregated data:
   - Price / Sale Price: Regular and final price of the enabled and salable child with the lowest final price
   - Stock Status: In-stock if at least one child is available
   - Images: Uses the configurable product's base image
   - Skips configurable products with no available children
 
 This setting is configurable per store view to allow different export strategies for different stores.
+
+A configurable product is an **exportable parent** in a store view when it is enabled, visible individually (Catalog, Search, or Catalog + Search) and assigned to the store view's website.
+
+- Children (simple or virtual) of an exportable parent are exported only through that parent, according to the setting above. They are not exported when the parent itself is not in the feed, for example when it is not assigned to an exported category. The link, `item_group_id` and fallback image come from the parent the child is exported with.
+- Children of configurable products that are not exportable parents are treated like any other product.
+- All other products, including children of grouped and bundle products, are exported only when they are visible individually, because products that are "Not Visible Individually" have no product page to link to. They are linked to their own product page.
+- Children of grouped and bundle products that are also children of an exportable parent get that configurable product's link and `item_group_id`.
+
+Status and visibility are read from the store view value, falling back to the default (All Store Views) value.
 
 
 ## Shipping

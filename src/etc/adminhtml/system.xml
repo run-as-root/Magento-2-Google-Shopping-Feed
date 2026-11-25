@@ -81,7 +81,7 @@
                         <field id="run_as_root_product_feed/general/enabled">1</field>
                     </depends>
                     <label>Configurable Products Export</label>
-                    <comment>Choose whether to export configurable products themselves or their visible child products only.</comment>
+                    <comment>Child Products: every enabled child is exported as a variant, linked to its parent and grouped by the parent SKU, regardless of the child visibility. Only Parent Products: the configurable product itself is exported, its children are not.</comment>
                     <source_model>RunAsRoot\GoogleShoppingFeed\SourceModel\ConfigurableExportType</source_model>
                 </field>
             </group>

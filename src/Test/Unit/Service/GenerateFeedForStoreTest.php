@@ -17,13 +17,16 @@ use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Store\Api\Data\StoreInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ConfigurableChildrenCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ProductsCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
 use RunAsRoot\GoogleShoppingFeed\Converter\ArrayToXmlConverter;
 use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributesConfigListProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
 use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
+use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
 use RunAsRoot\GoogleShoppingFeed\Mapper\ProductToFeedAttributesRowMapper;
 use RunAsRoot\GoogleShoppingFeed\Service\GenerateFeedForStore;
 use RunAsRoot\GoogleShoppingFeed\SourceModel\ConfigurableExportType;
@@ -56,6 +59,9 @@ final class GenerateFeedForStoreTest extends TestCase
     /** @var ProductRepositoryInterface|MockObject */
     private $productRepositoryMock;
 
+    /** @var ConfigurableChildrenCollectionProvider|MockObject */
+    private $configurableChildrenCollectionProviderMock;
+
     private GenerateFeedForStore $sut;
 
     protected function setUp(): void
@@ -68,6 +74,9 @@ final class GenerateFeedForStoreTest extends TestCase
         $this->allowedCategoryIdsProviderMock = $this->createMock(AllowedCategoryIdsProvider::class);
         $this->arrayToXmlConverterMock = $this->createMock(ArrayToXmlConverter::class);
         $this->productRepositoryMock = $this->createMock(ProductRepositoryInterface::class);
+        $this->configurableChildrenCollectionProviderMock = $this->createMock(
+            ConfigurableChildrenCollectionProvider::class
+        );
 
         $this->sut = new GenerateFeedForStore(
             $this->configProviderMock,
@@ -77,7 +86,8 @@ final class GenerateFeedForStoreTest extends TestCase
             $this->productsCollectionProviderMock,
             $this->allowedCategoryIdsProviderMock,
             $this->arrayToXmlConverterMock,
-            $this->productRepositoryMock
+            $this->productRepositoryMock,
+            $this->configurableChildrenCollectionProviderMock
         );
     }
 
@@ -379,16 +389,7 @@ final class GenerateFeedForStoreTest extends TestCase
         $visibleChildProduct->expects($this->once())
             ->method('getStatus')
             ->willReturn(Status::STATUS_ENABLED);
-        $visibleChildProduct->expects($this->once())
-            ->method('getVisibility')
-            ->willReturn(Visibility::VISIBILITY_BOTH);
-        $visibleChildProduct->expects($this->once())
-            ->method('getSku')
-            ->willReturn('visible-child-sku');
-        $visibleChildProduct->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn($storeId);
-        $visibleChildProduct->expects($this->once())
+        $visibleChildProduct->expects($this->atLeastOnce())
             ->method('getId')
             ->willReturn(2);
 
@@ -397,10 +398,14 @@ final class GenerateFeedForStoreTest extends TestCase
             ->with($configurableProduct)
             ->willReturn([$visibleChildProduct]);
 
-        $this->productRepositoryMock->expects($this->once())
+        $childCollectionMock = $this->createMock(ProductCollection::class);
+        $childCollectionMock->expects($this->once())
+            ->method('getItems')
+            ->willReturn([2 => $visibleChildProduct]);
+        $this->configurableChildrenCollectionProviderMock->expects($this->once())
             ->method('get')
-            ->with('visible-child-sku', false, $storeId)
-            ->willReturn($visibleChildProduct);
+            ->with([2], (int)$storeId)
+            ->willReturn($childCollectionMock);
 
         $productItems = [$configurableProduct];
 
@@ -596,11 +601,11 @@ final class GenerateFeedForStoreTest extends TestCase
             ->method('getSku')
             ->willReturn('grouped-child-sku');
         $childProduct->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn($storeId);
-        $childProduct->expects($this->once())
             ->method('getId')
             ->willReturn(2);
+        $groupedProduct->expects($this->once())
+            ->method('getStoreId')
+            ->willReturn($storeId);
 
         $groupedTypeInstance->expects($this->once())
             ->method('getAssociatedProducts')
@@ -656,103 +661,50 @@ final class GenerateFeedForStoreTest extends TestCase
         $this->sut->execute($storeMock);
     }
 
-    public function testExecuteWithConfigurableProductChildExportSkipsNotVisibleChildren(): void
+    public function testExecuteWithConfigurableProductChildExportIncludesNotVisibleChildren(): void
     {
         $storeMock = $this->createMock(StoreInterface::class);
-        $fileWriterMock = $this->createMock(FileWriter::class);
-        $storeId = '1';
-
-        $storeMock->expects($this->once())
-            ->method('getId')
-            ->willReturn($storeId);
-
-        $this->configProviderMock->expects($this->once())
-            ->method('isEnabled')
-            ->with((int)$storeId)
-            ->willReturn(true);
-
-        $this->configProviderMock->expects($this->once())
-            ->method('getConfigurableExportType')
-            ->with((int)$storeId)
+        $storeMock->method('getId')->willReturn('1');
+        $this->configProviderMock->method('isEnabled')->willReturn(true);
+        $this->configProviderMock->method('getConfigurableExportType')
             ->willReturn(ConfigurableExportType::EXPORT_CHILD_PRODUCTS);
-
-        $this->xmlFileWriterProviderMock
-            ->expects($this->once())
-            ->method('get')
-            ->with($storeMock)
-            ->willReturn($fileWriterMock);
-
-        $this->attributesConfigListProviderMock->expects($this->once())
-            ->method('get')
-            ->willReturn(new AttributeConfigDataList([]));
-
-        $whitelistedCategories = [1, 2, 3];
-
-        $this->allowedCategoryIdsProviderMock
-            ->expects($this->once())
-            ->method('get')
-            ->with((int)$storeId)
-            ->willReturn($whitelistedCategories);
-
-        $configurableProduct = $this->createMock(Product::class);
-        $configurableProduct->expects($this->atLeastOnce())
-            ->method('getId')
-            ->willReturn(1);
-        $configurableProduct->expects($this->once())
-            ->method('getStoreId')
-            ->willReturn($storeId);
-
-        $configurableTypeInstance = $this->createMock(Configurable::class);
-        $configurableProduct->expects($this->atLeastOnce())
-            ->method('getTypeInstance')
-            ->willReturn($configurableTypeInstance);
+        $this->xmlFileWriterProviderMock->method('get')->willReturn($this->createMock(FileWriter::class));
+        $this->attributesConfigListProviderMock->method('get')->willReturn(new AttributeConfigDataList([]));
+        $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
 
         $notVisibleChildProduct = $this->createMock(Product::class);
-        $notVisibleChildProduct->expects($this->once())
-            ->method('getStatus')
-            ->willReturn(Status::STATUS_ENABLED);
-        $notVisibleChildProduct->expects($this->once())
-            ->method('getVisibility')
-            ->willReturn(Visibility::VISIBILITY_NOT_VISIBLE);
+        $notVisibleChildProduct->method('getId')->willReturn(2);
+        $notVisibleChildProduct->method('getStatus')->willReturn(Status::STATUS_ENABLED);
+        $notVisibleChildProduct->method('getVisibility')->willReturn(Visibility::VISIBILITY_NOT_VISIBLE);
 
-        $configurableTypeInstance->expects($this->once())
-            ->method('getUsedProducts')
-            ->with($configurableProduct)
-            ->willReturn([$notVisibleChildProduct]);
+        $configurableTypeInstance = $this->createMock(Configurable::class);
+        $configurableTypeInstance->method('getUsedProducts')->willReturn([$notVisibleChildProduct]);
+        $configurableProduct = $this->createMock(Product::class);
+        $configurableProduct->method('getId')->willReturn(1);
+        $configurableProduct->method('getStoreId')->willReturn(1);
+        $configurableProduct->method('getTypeInstance')->willReturn($configurableTypeInstance);
 
-        $productItems = [$configurableProduct];
+        $childCollectionMock = $this->createMock(ProductCollection::class);
+        $childCollectionMock->method('getItems')->willReturn([ 2 => $notVisibleChildProduct ]);
+        $this->configurableChildrenCollectionProviderMock->expects($this->once())
+            ->method('get')
+            ->with([ 2 ], 1)
+            ->willReturn($childCollectionMock);
+        $this->mapperMock->method('map')->willReturnCallback(
+            static fn (Product $product): array => [ 'id' => $product->getId() ]
+        );
 
         $collectionMock = $this->createMock(ProductCollection::class);
-        $collectionMock->expects($this->once())
-            ->method('getItems')
-            ->willReturn($productItems);
-        $collectionMock->expects($this->once())
-            ->method('getPageSize')
-            ->willReturn(300);
-        $collectionMock->expects($this->once())
-            ->method('getSize')
-            ->willReturn(count($productItems));
-
-        $this->productsCollectionProviderMock
-            ->expects($this->once())
-            ->method('get')
-            ->with(1, $whitelistedCategories, (int)$storeId)
-            ->willReturn($collectionMock);
-
-        $this->mapperMock->expects($this->never())->method('map');
-
-        $this->productRepositoryMock->expects($this->never())->method('get');
+        $collectionMock->method('getItems')->willReturn([ $configurableProduct ]);
+        $collectionMock->method('getPageSize')->willReturn(300);
+        $collectionMock->method('getSize')->willReturn(1);
+        $this->productsCollectionProviderMock->method('get')->willReturn($collectionMock);
 
         $this->arrayToXmlConverterMock
             ->expects($this->once())
             ->method('convert')
-            ->with([])
+            ->with([ 2 => [ 'id' => 2 ] ])
             ->willReturn('xml string');
-
-        $fileWriterMock->expects($this->once())
-            ->method('write')
-            ->with('xml string')
-            ->willReturn(true);
 
         $this->sut->execute($storeMock);
     }
@@ -839,7 +791,7 @@ final class GenerateFeedForStoreTest extends TestCase
 
         $this->mapperMock->expects($this->never())->method('map');
 
-        $this->productRepositoryMock->expects($this->never())->method('get');
+        $this->configurableChildrenCollectionProviderMock->expects($this->never())->method('get');
 
         $this->arrayToXmlConverterMock
             ->expects($this->once())
@@ -1007,5 +959,237 @@ final class GenerateFeedForStoreTest extends TestCase
             ->willReturn('xml string');
 
         $this->sut->execute($storeMock);
+    }
+
+    public function testExecuteSkipsNotVisibleBundleChildren(): void
+    {
+        $storeMock = $this->createMock(StoreInterface::class);
+        $storeMock->method('getId')->willReturn('1');
+        $this->configProviderMock->method('isEnabled')->willReturn(true);
+        $this->xmlFileWriterProviderMock->method('get')->willReturn($this->createMock(FileWriter::class));
+        $this->attributesConfigListProviderMock->method('get')->willReturn(new AttributeConfigDataList([]));
+        $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
+
+        $bundleTypeInstance = $this->createMock(BundleProduct::class);
+        $bundleTypeInstance->method('getChildrenIds')->willReturn([[ 6 => 6, 7 => 7 ]]);
+        $bundleProduct = $this->createMock(Product::class);
+        $bundleProduct->method('getId')->willReturn(10);
+        $bundleProduct->method('getTypeInstance')->willReturn($bundleTypeInstance);
+
+        $visibleBundleChild = $this->createMock(Product::class);
+        $visibleBundleChild->method('getId')->willReturn(6);
+        $visibleBundleChild->method('getStatus')->willReturn(Status::STATUS_ENABLED);
+        $visibleBundleChild->method('getVisibility')->willReturn(Visibility::VISIBILITY_BOTH);
+        $notVisibleBundleChild = $this->createMock(Product::class);
+        $notVisibleBundleChild->method('getId')->willReturn(7);
+        $notVisibleBundleChild->method('getStatus')->willReturn(Status::STATUS_ENABLED);
+        $notVisibleBundleChild->method('getVisibility')->willReturn(Visibility::VISIBILITY_NOT_VISIBLE);
+        $this->productRepositoryMock->method('getById')->willReturnMap([
+            [ 6, false, null, false, $visibleBundleChild ],
+            [ 7, false, null, false, $notVisibleBundleChild ],
+        ]);
+
+        $this->mapperMock->method('map')->willReturnCallback(
+            static fn (Product $product): array => [ 'id' => $product->getId() ]
+        );
+
+        $collectionMock = $this->createMock(ProductCollection::class);
+        $collectionMock->method('getItems')->willReturn([ $bundleProduct ]);
+        $collectionMock->method('getPageSize')->willReturn(300);
+        $collectionMock->method('getSize')->willReturn(1);
+        $this->productsCollectionProviderMock->method('get')->willReturn($collectionMock);
+
+        $this->arrayToXmlConverterMock
+            ->expects($this->once())
+            ->method('convert')
+            ->with([ 6 => [ 'id' => 6 ] ])
+            ->willReturn('xml string');
+
+        $this->sut->execute($storeMock);
+    }
+
+    public function testExecuteSkipsNotVisibleGroupedChildren(): void
+    {
+        $storeMock = $this->createMock(StoreInterface::class);
+        $storeMock->method('getId')->willReturn('1');
+        $this->configProviderMock->method('isEnabled')->willReturn(true);
+        $this->xmlFileWriterProviderMock->method('get')->willReturn($this->createMock(FileWriter::class));
+        $this->attributesConfigListProviderMock->method('get')->willReturn(new AttributeConfigDataList([]));
+        $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
+
+        $associatedGroupedChild = $this->createMock(Product::class);
+        $associatedGroupedChild->method('getSku')->willReturn('grouped-child-sku');
+        $associatedGroupedChild->method('getStatus')->willReturn(Status::STATUS_ENABLED);
+        $associatedGroupedChild->method('getVisibility')->willReturn(null);
+        $groupedTypeInstance = $this->createMock(Grouped::class);
+        $groupedTypeInstance->method('getAssociatedProducts')->willReturn([ $associatedGroupedChild ]);
+        $groupedProduct = $this->createMock(Product::class);
+        $groupedProduct->method('getId')->willReturn(1);
+        $groupedProduct->method('getStoreId')->willReturn(1);
+        $groupedProduct->method('getTypeInstance')->willReturn($groupedTypeInstance);
+
+        $loadedGroupedChild = $this->createMock(Product::class);
+        $loadedGroupedChild->method('getVisibility')->willReturn(Visibility::VISIBILITY_NOT_VISIBLE);
+        $this->productRepositoryMock->expects($this->once())
+            ->method('get')
+            ->with('grouped-child-sku', false, 1)
+            ->willReturn($loadedGroupedChild);
+        $this->mapperMock->expects($this->never())->method('map');
+
+        $collectionMock = $this->createMock(ProductCollection::class);
+        $collectionMock->method('getItems')->willReturn([ $groupedProduct ]);
+        $collectionMock->method('getPageSize')->willReturn(300);
+        $collectionMock->method('getSize')->willReturn(1);
+        $this->productsCollectionProviderMock->method('get')->willReturn($collectionMock);
+
+        $this->arrayToXmlConverterMock
+            ->expects($this->once())
+            ->method('convert')
+            ->with([])
+            ->willReturn('xml string');
+
+        $this->sut->execute($storeMock);
+    }
+
+    public function testExecuteWithConfigurableProductChildExportUsesStoreChildrenAndMarksTheirParent(): void
+    {
+        $storeMock = $this->createMock(StoreInterface::class);
+        $storeMock->method('getId')->willReturn('2');
+        $this->configProviderMock->method('isEnabled')->willReturn(true);
+        $this->configProviderMock->method('getConfigurableExportType')
+            ->willReturn(ConfigurableExportType::EXPORT_CHILD_PRODUCTS);
+        $this->xmlFileWriterProviderMock->method('get')->willReturn($this->createMock(FileWriter::class));
+        $this->attributesConfigListProviderMock->method('get')->willReturn(new AttributeConfigDataList([]));
+        $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
+
+        $usedChildProduct = $this->createMock(Product::class);
+        $usedChildProduct->method('getId')->willReturn(11);
+        $usedChildProduct->method('getStatus')->willReturn(Status::STATUS_ENABLED);
+
+        $configurableTypeInstance = $this->createMock(Configurable::class);
+        $configurableProduct = $this->createMock(Product::class);
+        $configurableProduct->method('getId')->willReturn(10);
+        $configurableProduct->method('getStoreId')->willReturn(2);
+        $configurableProduct->method('getTypeInstance')->willReturn($configurableTypeInstance);
+        $configurableTypeInstance->expects($this->once())
+            ->method('setStoreFilter')
+            ->with(2, $configurableProduct);
+        $configurableTypeInstance->method('getUsedProducts')->willReturn([ $usedChildProduct ]);
+
+        $loadedChildProduct = $this->createMock(Product::class);
+        $loadedChildProduct->method('getId')->willReturn(11);
+        $loadedChildProduct->expects($this->once())
+            ->method('setData')
+            ->with(ParentProductProvider::VARIANT_PARENT_ID, 10);
+        $loadedChildProduct->expects($this->once())
+            ->method('unsetData')
+            ->with(ParentProductProvider::VARIANT_PARENT_ID);
+        $childCollectionMock = $this->createMock(ProductCollection::class);
+        $childCollectionMock->method('getItems')->willReturn([ 11 => $loadedChildProduct ]);
+        $this->configurableChildrenCollectionProviderMock->expects($this->once())
+            ->method('get')
+            ->with([ 11 ], 2)
+            ->willReturn($childCollectionMock);
+        $this->mapperMock->method('map')->willReturn([ 'id' => 11 ]);
+
+        $collectionMock = $this->createMock(ProductCollection::class);
+        $collectionMock->method('getItems')->willReturn([ $configurableProduct ]);
+        $collectionMock->method('getPageSize')->willReturn(300);
+        $collectionMock->method('getSize')->willReturn(1);
+        $this->productsCollectionProviderMock->method('get')->willReturn($collectionMock);
+
+        $this->arrayToXmlConverterMock
+            ->expects($this->once())
+            ->method('convert')
+            ->with([ 11 => [ 'id' => 11 ] ])
+            ->willReturn('xml string');
+
+        $this->sut->execute($storeMock);
+    }
+
+    public function testExecuteWithConfigurableProductParentExportChecksStoreChildren(): void
+    {
+        $storeMock = $this->createMock(StoreInterface::class);
+        $storeMock->method('getId')->willReturn('2');
+        $this->configProviderMock->method('isEnabled')->willReturn(true);
+        $this->configProviderMock->method('getConfigurableExportType')
+            ->willReturn(ConfigurableExportType::EXPORT_PARENT_PRODUCTS);
+        $this->xmlFileWriterProviderMock->method('get')->willReturn($this->createMock(FileWriter::class));
+        $this->attributesConfigListProviderMock->method('get')->willReturn(new AttributeConfigDataList([]));
+        $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
+
+        $configurableTypeInstance = $this->createMock(Configurable::class);
+        $configurableProduct = $this->createMock(Product::class);
+        $configurableProduct->method('getId')->willReturn(10);
+        $configurableProduct->method('getStoreId')->willReturn(2);
+        $configurableProduct->method('getTypeInstance')->willReturn($configurableTypeInstance);
+        $configurableTypeInstance->expects($this->once())
+            ->method('setStoreFilter')
+            ->with(2, $configurableProduct);
+        $configurableTypeInstance->method('getUsedProducts')->willReturn([]);
+
+        $this->mapperMock->expects($this->never())->method('map');
+
+        $collectionMock = $this->createMock(ProductCollection::class);
+        $collectionMock->method('getItems')->willReturn([ $configurableProduct ]);
+        $collectionMock->method('getPageSize')->willReturn(300);
+        $collectionMock->method('getSize')->willReturn(1);
+        $this->productsCollectionProviderMock->method('get')->willReturn($collectionMock);
+
+        $this->arrayToXmlConverterMock
+            ->expects($this->once())
+            ->method('convert')
+            ->with([])
+            ->willReturn('xml string');
+
+        $this->sut->execute($storeMock);
+    }
+
+    public function testExecuteRemovesVariantParentTagWhenMappingFails(): void
+    {
+        $storeMock = $this->createMock(StoreInterface::class);
+        $storeMock->method('getId')->willReturn('2');
+        $this->configProviderMock->method('isEnabled')->willReturn(true);
+        $this->configProviderMock->method('getConfigurableExportType')
+            ->willReturn(ConfigurableExportType::EXPORT_CHILD_PRODUCTS);
+        $this->xmlFileWriterProviderMock->method('get')->willReturn($this->createMock(FileWriter::class));
+        $this->attributesConfigListProviderMock->method('get')->willReturn(new AttributeConfigDataList([]));
+        $this->allowedCategoryIdsProviderMock->method('get')->willReturn([2]);
+
+        $usedChildProduct = $this->createMock(Product::class);
+        $usedChildProduct->method('getId')->willReturn(11);
+        $usedChildProduct->method('getStatus')->willReturn(Status::STATUS_ENABLED);
+        $configurableTypeInstance = $this->createMock(Configurable::class);
+        $configurableTypeInstance->method('getUsedProducts')->willReturn([ $usedChildProduct ]);
+        $configurableProduct = $this->createMock(Product::class);
+        $configurableProduct->method('getId')->willReturn(10);
+        $configurableProduct->method('getStoreId')->willReturn(2);
+        $configurableProduct->method('getTypeInstance')->willReturn($configurableTypeInstance);
+
+        $loadedChildProduct = $this->createPartialMock(Product::class, [ 'getId' ]);
+        $loadedChildProduct->method('getId')->willReturn(11);
+        $childCollectionMock = $this->createMock(ProductCollection::class);
+        $childCollectionMock->method('getItems')->willReturn([ 11 => $loadedChildProduct ]);
+        $this->configurableChildrenCollectionProviderMock->method('get')->willReturn($childCollectionMock);
+        $this->mapperMock->method('map')->willReturnCallback(
+            static function (Product $product): array {
+                self::assertSame(10, $product->getData(ParentProductProvider::VARIANT_PARENT_ID));
+
+                throw new HandlerIsNotSpecifiedException(__('No handler'));
+            }
+        );
+
+        $collectionMock = $this->createMock(ProductCollection::class);
+        $collectionMock->method('getItems')->willReturn([ $configurableProduct ]);
+        $collectionMock->method('getPageSize')->willReturn(300);
+        $collectionMock->method('getSize')->willReturn(1);
+        $this->productsCollectionProviderMock->method('get')->willReturn($collectionMock);
+
+        try {
+            $this->sut->execute($storeMock);
+            $this->fail('GenerateFeedForStoreException was expected');
+        } catch (GenerateFeedForStoreException $exception) {
+            $this->assertFalse($loadedChildProduct->hasData(ParentProductProvider::VARIANT_PARENT_ID));
+        }
     }
 }

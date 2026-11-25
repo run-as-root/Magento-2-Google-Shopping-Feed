@@ -8,6 +8,7 @@ use Magento\Bundle\Model\Product\Type as BundleProduct;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Framework\Exception\FileSystemException;
@@ -15,12 +16,14 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\GroupedProduct\Model\Product\Type\Grouped;
 use Magento\Store\Api\Data\StoreInterface;
+use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ConfigurableChildrenCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\CollectionProvider\ProductsCollectionProvider;
 use RunAsRoot\GoogleShoppingFeed\ConfigProvider\FeedConfigProvider;
 use RunAsRoot\GoogleShoppingFeed\Converter\ArrayToXmlConverter;
 use RunAsRoot\GoogleShoppingFeed\Data\AttributeConfigDataList;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AllowedCategoryIdsProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributesConfigListProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\ParentProductProvider;
 use RunAsRoot\GoogleShoppingFeed\Exception\GenerateFeedForStoreException;
 use RunAsRoot\GoogleShoppingFeed\Exception\HandlerIsNotSpecifiedException;
 use RunAsRoot\GoogleShoppingFeed\Exception\WrongInstanceException;
@@ -40,6 +43,7 @@ class GenerateFeedForStore
     private AllowedCategoryIdsProvider $allowedCategoryIdsProvider;
     private ArrayToXmlConverter $arrayToXmlConverter;
     private ProductRepositoryInterface $productRepository;
+    private ConfigurableChildrenCollectionProvider $configurableChildrenCollectionProvider;
 
     public function __construct(
         FeedConfigProvider $configProvider,
@@ -49,7 +53,8 @@ class GenerateFeedForStore
         ProductsCollectionProvider $productsCollectionProvider,
         AllowedCategoryIdsProvider $allowedCategoryIdsProvider,
         ArrayToXmlConverter $arrayToXmlConverter,
-        ProductRepositoryInterface $productRepository
+        ProductRepositoryInterface $productRepository,
+        ConfigurableChildrenCollectionProvider $configurableChildrenCollectionProvider
     ) {
         $this->configProvider = $configProvider;
         $this->attributesConfigListProvider = $attributesConfigListProvider;
@@ -59,6 +64,7 @@ class GenerateFeedForStore
         $this->allowedCategoryIdsProvider = $allowedCategoryIdsProvider;
         $this->arrayToXmlConverter = $arrayToXmlConverter;
         $this->productRepository = $productRepository;
+        $this->configurableChildrenCollectionProvider = $configurableChildrenCollectionProvider;
     }
 
     /**
@@ -182,10 +188,10 @@ class GenerateFeedForStore
         $configExportType = $this->configProvider->getConfigurableExportType($storeId);
 
         if ($configExportType === ConfigurableExportType::EXPORT_PARENT_PRODUCTS) {
-            return $this->getConfigurableParentProductRows($product, $attributesConfigList);
+            return $this->getConfigurableParentProductRows($product, $attributesConfigList, $storeId);
         }
 
-        return $this->getConfigurableChildProductRows($product, $attributesConfigList);
+        return $this->getConfigurableChildProductRows($product, $attributesConfigList, $storeId);
     }
 
     /**
@@ -207,18 +213,16 @@ class GenerateFeedForStore
                 continue;
             }
 
-            $visibility = (int)$childProduct->getVisibility();
-
-            if ($visibility === \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE) {
-                continue;
-            }
-
             try {
                 $childProduct = $this->productRepository
-                    ->get($childProduct->getSku(), false, $childProduct->getStoreId());
+                    ->get($childProduct->getSku(), false, $product->getStoreId());
 
                 if (!$childProduct instanceof Product) {
                     throw new \InvalidArgumentException('Expected Product instance');
+                }
+
+                if ((int)$childProduct->getVisibility() === Visibility::VISIBILITY_NOT_VISIBLE) {
+                    continue;
                 }
 
                 $rows[$childProduct->getId()] = $this->productToRowMapper
@@ -261,7 +265,10 @@ class GenerateFeedForStore
                         throw new \InvalidArgumentException('Expected Product instance');
                     }
     
-                    if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
+                    if (
+                        (int)$childProduct->getStatus() !== self::STATUS_ENABLED
+                        || (int)$childProduct->getVisibility() === Visibility::VISIBILITY_NOT_VISIBLE
+                    ) {
                         continue;
                     }
 
@@ -289,11 +296,10 @@ class GenerateFeedForStore
      */
     private function getConfigurableParentProductRows(
         Product $product,
-        AttributeConfigDataList $attributesConfigList
+        AttributeConfigDataList $attributesConfigList,
+        int $storeId
     ): array {
-        $typeInstance = $product->getTypeInstance();
-        /** @var Configurable $typeInstance */
-        $childProducts = $typeInstance->getUsedProducts($product);
+        $childProducts = $this->getStoreChildProducts($product, $storeId);
 
         $availableChildren = $this->getAvailableChildProducts(array_map(static function ($product) {
             if (!$product instanceof Product) {
@@ -327,36 +333,26 @@ class GenerateFeedForStore
      */
     private function getConfigurableChildProductRows(
         Product $product,
-        AttributeConfigDataList $attributesConfigList
+        AttributeConfigDataList $attributesConfigList,
+        int $storeId
     ): array {
         /** @var array<int, array<string, mixed>> $rows */
         $rows = [];
-        $typeInstance = $product->getTypeInstance();
-        /** @var Configurable $typeInstance */
-        $childProducts = $typeInstance->getUsedProducts($product);
+        $enabledChildIds = $this->getEnabledChildIds($product, $storeId);
+
+        if ($enabledChildIds === []) {
+            return $rows;
+        }
+
+        $childProducts = $this->configurableChildrenCollectionProvider->get($enabledChildIds, $storeId)->getItems();
 
         foreach ($childProducts as $childProduct) {
-            /** @var Product $childProduct */
-            if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
-                continue;
-            }
-
-            $visibility = (int)$childProduct->getVisibility();
-
-            if ($visibility === \Magento\Catalog\Model\Product\Visibility::VISIBILITY_NOT_VISIBLE) {
-                continue;
-            }
-
             try {
-                $childProduct = $this->productRepository
-                    ->get($childProduct->getSku(), false, $childProduct->getStoreId());
-
                 if (!$childProduct instanceof Product) {
                     throw new \InvalidArgumentException('Expected Product instance');
                 }
 
-                $rows[$childProduct->getId()] = $this->productToRowMapper
-                    ->map($childProduct, $attributesConfigList);
+                $rows[$childProduct->getId()] = $this->mapVariantRow($childProduct, $product, $attributesConfigList);
             } catch (HandlerIsNotSpecifiedException | WrongInstanceException $exception) {
                 throw new GenerateFeedForStoreException(
                     __(
@@ -370,6 +366,56 @@ class GenerateFeedForStore
         }
 
         return $rows;
+    }
+
+    /**
+     * @return array<string, mixed>
+     * @throws HandlerIsNotSpecifiedException
+     * @throws WrongInstanceException
+     */
+    private function mapVariantRow(
+        Product $childProduct,
+        Product $parentProduct,
+        AttributeConfigDataList $attributesConfigList
+    ): array {
+        $childProduct->setData(ParentProductProvider::VARIANT_PARENT_ID, (int)$parentProduct->getId());
+
+        try {
+            return $this->productToRowMapper->map($childProduct, $attributesConfigList);
+        } finally {
+            $childProduct->unsetData(ParentProductProvider::VARIANT_PARENT_ID);
+        }
+    }
+
+    /**
+     * @return array<int>
+     */
+    private function getEnabledChildIds(Product $product, int $storeId): array
+    {
+        $enabledChildIds = [];
+
+        foreach ($this->getStoreChildProducts($product, $storeId) as $childProduct) {
+            /** @var Product $childProduct */
+            if ((int)$childProduct->getStatus() !== self::STATUS_ENABLED) {
+                continue;
+            }
+
+            $enabledChildIds[] = (int)$childProduct->getId();
+        }
+
+        return $enabledChildIds;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private function getStoreChildProducts(Product $product, int $storeId): array
+    {
+        $typeInstance = $product->getTypeInstance();
+        /** @var Configurable $typeInstance */
+        $typeInstance->setStoreFilter($storeId, $product);
+
+        return $typeInstance->getUsedProducts($product);
     }
 
     /**
