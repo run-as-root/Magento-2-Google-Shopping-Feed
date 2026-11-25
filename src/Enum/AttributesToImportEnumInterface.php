@@ -22,6 +22,7 @@ use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\PriceProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductDetailProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductTypeProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ProductUrlProvider;
+use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SalePriceProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\ShippingProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SizeProvider;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SkuProvider;
@@ -92,6 +93,10 @@ interface AttributesToImportEnumInterface
         'price' => [
             AttributeConfigData::FIELD_NAME => 'price',
             AttributeConfigData::ATTRIBUTE_HANDLER => PriceProvider::class,
+        ],
+        'sale_price' => [
+            AttributeConfigData::FIELD_NAME => 'sale_price',
+            AttributeConfigData::ATTRIBUTE_HANDLER => SalePriceProvider::class,
         ],
         'product_detail' => [
             AttributeConfigData::FIELD_NAME => 'product_detail',

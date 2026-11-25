@@ -29,6 +29,31 @@ final class ArrayToXmlConverterTest extends TestCase
         $this->assertXmlStringEqualsXmlString($this->getExpectedResult(), $this->sut->convert($this->getProductRow()));
     }
 
+    public function testConvertAddsSalePriceAfterPrice(): void
+    {
+        $rows = $this->getProductRow();
+        $rows[0]['sale_price'] = '199,00 EUR';
+
+        $expected = str_replace(
+            "<g:price><![CDATA[230,00 EUR]]></g:price>",
+            "<g:price><![CDATA[230,00 EUR]]></g:price><g:sale_price><![CDATA[199,00 EUR]]></g:sale_price>",
+            $this->getExpectedResult()
+        );
+
+        $this->assertXmlStringEqualsXmlString($expected, $this->sut->convert($rows));
+    }
+
+    public function testConvertOmitsEmptySalePrice(): void
+    {
+        $rows = $this->getProductRow();
+        $rows[0]['sale_price'] = '';
+
+        $result = $this->sut->convert($rows);
+
+        $this->assertXmlStringEqualsXmlString($this->getExpectedResult(), $result);
+        $this->assertStringNotContainsString('sale_price', $result);
+    }
+
     private function getProductRow(): array
     {
         return [

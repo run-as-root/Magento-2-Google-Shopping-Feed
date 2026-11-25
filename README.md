@@ -32,6 +32,14 @@ The module will automatically detect MSI availability and use the appropriate in
 Generate product feed every 2 hours with minimal required attributes, for each storeview.  
 Places file into `pub/media/run_as_root/feed/%s_store_%s_feed.xml`.
 
+### Prices
+
+- `g:price` is the regular price (`price` attribute) of the product.
+- `g:sale_price` is the final price a guest pays for one item (special price, tier price for quantity 1 and catalog price rules for the NOT LOGGED IN customer group and the store's website). It is only exported when it is still lower than the regular price after currency conversion and rounding.
+- Both use the price as entered in the catalog (no tax adjustments) and are converted once from the base currency into the store view currency.
+- Configurable products exported as parents use the prices of their cheapest enabled and salable child (on equal final prices, the one with the lower regular price). If no child is salable, all enabled children are considered. Grouped and bundle products are exported as their child products, each with its own prices.
+- `g:sale_price_effective_date` is not exported, so Google applies the sale price immediately. The feed is regenerated on every run, so ended sales disappear with the next run.
+
 ### Configurable Product Export Control
 
 Configure how configurable products are exported to the feed:
@@ -105,7 +113,7 @@ The "Configurables Export" setting controls how configurable products are handle
 
 - **Child Products (Variants)** (default): Exports every enabled child product of a configurable product as a variant, regardless of the child's visibility. The link points to the parent product and `item_group_id` is the parent SKU
 - **Only Parent Products**: Exports the configurable product itself, never its children, with aggregated data:
-  - Price: Lowest price from available (enabled and in-stock) children
+  - Price / Sale Price: Regular and final price of the enabled and salable child with the lowest final price
   - Stock Status: In-stock if at least one child is available
   - Images: Uses the configurable product's base image
   - Skips configurable products with no available children

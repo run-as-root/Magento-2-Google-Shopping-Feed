@@ -63,6 +63,7 @@ XML;
 			<g:availability><![CDATA[{$row['is_in_stock']}]]></g:availability>
             <g:product_type><![CDATA[{$row['product_type']}]]></g:product_type>
 			<g:price><![CDATA[{$row['price']}]]></g:price>
+            {$this->getOptionalProductAttr($row, 'sale_price')}
             <g:mpn><![CDATA[{$row['sku']}]]></g:mpn>
             {$this->getOptionalProductAttr($row, 'manufacturer', 'brand')}
             <g:item_group_id><![CDATA[{$row['item_group_id']}]]></g:item_group_id>
