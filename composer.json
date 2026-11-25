@@ -11,6 +11,7 @@
         "magento/module-import-export": "*",
         "magento/module-catalog": "*",
         "magento/module-catalog-inventory": "*",
+        "magento/module-customer": "*",
         "magento/module-review": "*",
         "magento/module-eav": "*",
         "magento/module-directory": "*",
