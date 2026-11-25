@@ -10,6 +10,7 @@ use Magento\ConfigurableProduct\Model\Product\Type\Configurable;
 use Magento\Customer\Api\Data\GroupInterface;
 use Magento\Framework\Exception\LocalizedException;
 use RunAsRoot\GoogleShoppingFeed\Data\ProductPricesData;
+use RunAsRoot\GoogleShoppingFeed\Registry\LastComputedProductPricesCache;
 use RunAsRoot\GoogleShoppingFeed\Service\GetAssignedStockIdForStore;
 use RunAsRoot\GoogleShoppingFeed\Service\InventoryAdapterFactory;
 use RunAsRoot\GoogleShoppingFeed\Service\InventoryAdapterInterface;
@@ -22,44 +23,30 @@ class ProductPricesProvider
     private GetAssignedStockIdForStore $getAssignedStockIdForStore;
     private InventoryAdapterFactory $inventoryAdapterFactory;
     private ?InventoryAdapterInterface $inventoryAdapter = null;
-    private ?Product $lastProduct = null;
-    private ?int $lastProductId = null;
-    private ?int $lastStoreId = null;
-    private ?ProductPricesData $lastPrices = null;
+    private LastComputedProductPricesCache $lastComputedProductPricesCache;
 
     public function __construct(
         GetAssignedStockIdForStore $getAssignedStockIdForStore,
-        InventoryAdapterFactory $inventoryAdapterFactory
+        InventoryAdapterFactory $inventoryAdapterFactory,
+        LastComputedProductPricesCache $lastComputedProductPricesCache
     ) {
         $this->getAssignedStockIdForStore = $getAssignedStockIdForStore;
         $this->inventoryAdapterFactory = $inventoryAdapterFactory;
+        $this->lastComputedProductPricesCache = $lastComputedProductPricesCache;
     }
 
     public function get(Product $product): ProductPricesData
     {
-        if ($this->lastPrices !== null && $this->isLastComputedFor($product)) {
-            return $this->lastPrices;
+        $cachedPrices = $this->lastComputedProductPricesCache->get($product);
+
+        if ($cachedPrices !== null) {
+            return $cachedPrices;
         }
 
         $prices = $this->calculate($product);
-        $this->rememberLastComputed($product, $prices);
+        $this->lastComputedProductPricesCache->save($product, $prices);
 
         return $prices;
-    }
-
-    private function isLastComputedFor(Product $product): bool
-    {
-        return $this->lastProduct === $product
-            && $this->lastProductId === (int)$product->getId()
-            && $this->lastStoreId === (int)$product->getStoreId();
-    }
-
-    private function rememberLastComputed(Product $product, ProductPricesData $prices): void
-    {
-        $this->lastProduct = $product;
-        $this->lastProductId = (int)$product->getId();
-        $this->lastStoreId = (int)$product->getStoreId();
-        $this->lastPrices = $prices;
     }
 
     private function calculate(Product $product): ProductPricesData

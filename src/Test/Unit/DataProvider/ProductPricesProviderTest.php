@@ -13,6 +13,7 @@ use Magento\Framework\Exception\LocalizedException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RunAsRoot\GoogleShoppingFeed\DataProvider\ProductPricesProvider;
+use RunAsRoot\GoogleShoppingFeed\Registry\LastComputedProductPricesCache;
 use RunAsRoot\GoogleShoppingFeed\Service\GetAssignedStockIdForStore;
 use RunAsRoot\GoogleShoppingFeed\Service\InventoryAdapterFactory;
 use RunAsRoot\GoogleShoppingFeed\Service\InventoryAdapterInterface;
@@ -43,7 +44,11 @@ final class ProductPricesProviderTest extends TestCase
         $inventoryAdapterFactoryMock = $this->createMock(InventoryAdapterFactory::class);
         $inventoryAdapterFactoryMock->method('create')->willReturn($this->inventoryAdapterMock);
 
-        $this->sut = new ProductPricesProvider($this->getAssignedStockIdForStoreMock, $inventoryAdapterFactoryMock);
+        $this->sut = new ProductPricesProvider(
+            $this->getAssignedStockIdForStoreMock,
+            $inventoryAdapterFactoryMock,
+            new LastComputedProductPricesCache()
+        );
     }
 
     public function testGetReturnsOwnPricesForSingleNotLoggedInItem(): void
