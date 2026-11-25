@@ -16,7 +16,7 @@ class ConfigurableExportType implements OptionSourceInterface
         return [
             [
                 'value' => self::EXPORT_CHILD_PRODUCTS,
-                'label' => __('Only Visible Child Products'),
+                'label' => __('Child Products (Variants)'),
             ],
             [
                 'value' => self::EXPORT_PARENT_PRODUCTS,

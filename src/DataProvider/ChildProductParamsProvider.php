@@ -20,7 +20,7 @@ class ChildProductParamsProvider
     public function get(Product $product, Product $configurableProduct): ?array
     {
         if (
-            $product->getTypeId() !== Type::TYPE_SIMPLE ||
+            !in_array($product->getTypeId(), [ Type::TYPE_SIMPLE, Type::TYPE_VIRTUAL ], true) ||
             $configurableProduct->getTypeId() !== Configurable::TYPE_CODE
         ) {
             return null;
