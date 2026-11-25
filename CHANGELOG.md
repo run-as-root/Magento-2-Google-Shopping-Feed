@@ -7,51 +7,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-11-25
+
 ### Added
 - `g:sale_price` is exported when the final price (special price, catalog price rules for the NOT LOGGED IN customer group) is lower than the regular price (#36)
 
 ### Fixed
-- Shipping: each product now gets the single table rate that checkout would charge for it (matched by the one-item guest cart price including catalog price rules, weight or quantity against the condition value, including the handling fee), per country and per region via `<g:region>`, instead of every `shipping_tablerate` row. Rows of other websites and ZIP-specific rows are skipped, regions of countries without ISO 3166-2 region codes raise the country rate to their highest rate instead of being exported, the carrier's "Ship to Specific Countries" setting is applied, and when a product would exceed Google's limit of 100 entries, the rates from table rate rows for all countries are left out (#35)
+- Shipping: each product gets the single table rate that checkout would charge for it, per country and per region (`<g:region>`), instead of every `shipping_tablerate` row. Rows of other websites and ZIP-specific rows are skipped, and the carrier's "Ship to Specific Countries" setting is applied (#35)
 - Shipping: no `<g:shipping>` is exported when the table rate carrier is disabled, or for virtual and downloadable products (#35)
-- Products that are "Not Visible Individually" and are not children of a configurable product (standalone simple products, children of grouped and bundle products) are no longer exported with a link to a page that does not exist (#3, #34)
+- Shipping: when a product would exceed Google's limit of 100 shipping entries, the rates from table rate rows for all countries are left out (#35)
+- Products that are "Not Visible Individually" and are not children of a configurable product are no longer exported with a link to a page that does not exist (#3, #34)
 - Configurable products whose children are not assigned to an exported category no longer lose all their variants in "Child Products (Variants)" mode (#34)
 - Children of disabled or not visible configurable products are no longer linked to that parent's product page (#3, #34)
-- Virtual children of configurable products are linked to their parent like simple children (#34)
-- Children of configurable products are limited to products assigned to the store view's website (#34)
+- Virtual children of configurable products are linked to their parent like simple children, and children are limited to the store view's website (#34)
 - `g:price` contains the regular price instead of the discounted final price, so Google can show the sale (#36)
 - Catalog price rules were ignored when the feed was generated from the CLI command or cron (#36)
-- Configurable parent products no longer take their price from the storefront price renderer, which could add display tax adjustments and convert a non-base currency twice; they use the regular and final price of their cheapest salable child (#36)
+- Configurable parent products take their price from their cheapest salable child instead of the storefront price renderer, which could add display tax adjustments and convert a non-base currency twice (#36)
 
 ### Changed
-- `ShippingProvider` has new constructor arguments (`TableRateCarrierConfigProvider`, `MatchingTableRatesProvider`, `StoreManagerInterface`, `LoggerInterface`, `SingleItemGuestCartPriceProvider`). This only affects classes that extend it (#35)
+- Children of configurable products are exported only through their parent, according to the "Configurables Export" setting (#34):
+  - "Child Products (Variants)" (default, previously labelled "Only Visible Child Products") exports every enabled child regardless of its visibility, linked to the parent and grouped by the parent SKU
+  - "Only Parent Products" exports only the configurable product, no longer its children
+- A configurable product counts as a parent only when it is enabled, visible individually and assigned to the store view's website. Children of other configurable products are exported as standalone products when they are visible individually (#34)
+- Children of a configurable product are loaded with one collection query per parent instead of one product load per child (#34)
 - The module now depends on `Magento_Customer` (#35)
-- Children of configurable products are no longer exported through the main product collection. They are exported only through their parent, according to the "Configurables Export" setting (#34)
-- "Child Products (Variants)" mode (default, previously labelled "Only Visible Child Products") exports every enabled child of a configurable product regardless of its visibility, linked to the parent product and grouped by the parent SKU (#34)
-- "Only Parent Products" mode exports only the configurable product, no longer its children (#34)
-- A configurable product counts as a parent only when it is enabled, visible individually and assigned to the store view's website. Children of other configurable products are exported as standalone products when they are visible individually, with their own link and `item_group_id` (#34)
-- `ParentProductIdProvider::get()` accepts an optional store ID and then returns the lowest ID among the child's exportable parents in that store instead of the first parent found. `ProductsCollectionProvider` and `ParentProductIdProvider` have a new constructor dependency, `ExportableConfigurableParentsCollectionProvider` (#34)
-- Children of a configurable product are loaded with one collection query per parent instead of one product load per child. `GenerateFeedForStore` has a new constructor dependency, `ConfigurableChildrenCollectionProvider` (#34)
-- `PriceProvider` has a new required constructor argument `ProductPricesProvider`. Only classes that extend `PriceProvider` and call its constructor need to be updated (#36)
+- Constructor changes, relevant only to classes that extend these classes:
+  - `ShippingProvider`: new `TableRateCarrierConfigProvider`, `MatchingTableRatesProvider`, `StoreManagerInterface`, `LoggerInterface`, `SingleItemGuestCartPriceProvider` (#35)
+  - `PriceProvider`: new required `ProductPricesProvider` (#36)
+  - `ProductsCollectionProvider` and `ParentProductIdProvider`: new `ExportableConfigurableParentsCollectionProvider` (#34)
+  - `GenerateFeedForStore`: new `ConfigurableChildrenCollectionProvider` (#34)
+- `ParentProductIdProvider::get()` accepts an optional store ID and then returns the lowest ID among the child's exportable parents in that store (#34)
 
 ### Deprecated
 - The unused `RunAsRoot\GoogleShoppingFeed\DataProvider\AttributeHandlers\SpecialPriceProvider` virtual type; use `SalePriceProvider` (#36)
 
-## [1.1.0] - 2024-07-27
+## [1.7.0] - 2026-11-17
 
 ### Added
-- New "Configurables Export" system configuration option to control how configurable products are exported to the feed
-- Support for exporting configurable parent products instead of child products
-- Support for exporting only visible child products (Catalog/Search/Both visibility levels)
-- Per-store view configuration for different configurable product export strategies
+- "Configurables Export" system configuration option (per store view) to export configurable parent products or their child products, optionally only visible children (#3)
+- Documentation for custom shipping data sources (#18)
+
+### Fixed
+- Fatal error when MSI is disabled; the module no longer depends on MSI (#10)
+- Media gallery data is added after the store filter and pagination (#17)
+- The `no_selection` product image is treated as missing (#19)
+- Wrong ACL resource in `system.xml` (#20)
+- Duplicate items in the feed caused by `array_merge` discarding product ID keys (#29)
+- Prices are formatted as `34.00 USD` independent of the store locale (#30)
+- PHP 8.4 deprecation: explicit nullable type for the command name constructor parameter (#21)
 
 ### Changed
-- Refactored configurable product handling logic in GenerateFeedForStore service
-- Separated configurable and grouped product processing for better maintainability
-- Enhanced configurable product export with proper price aggregation, stock status calculation, and image handling
+- PHPUnit 10 compatibility and PHPStan fixes
 
-### Technical Details
-- Added ConfigurableExportType source model for configuration dropdown options
-- Extended FeedConfigProvider to include new configuration setting
-- Updated system configuration XML with new field
-- Comprehensive unit test coverage for all new functionality
-- Maintained backward compatibility with existing feed generation behavior
+## [1.6.0] - 2025-06-03
+
+### Fixed
+- `Missing required argument $directory`: `FilesystemIterator` argument `path` replaced with `directory` (#1)
+
+## [1.5.0] - 2023-06-13
+
+### Added
+- GitHub Actions pipeline running code style checks and unit tests (#5)
+
+## [1.4.0] - 2022-09-22
+
+### Added
+- Admin grid listing recently generated feeds (Marketing -> run_as_root -> Google Shopping Feeds)
+
+## [1.3.0] - 2022-09-21
+
+### Changed
+- Default cron execution time
+- Added product type attribute handler
